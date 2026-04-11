@@ -466,7 +466,9 @@
             <strong>${agent.name}</strong>
             <span class="pill">${agent.grade || 'Cadet'}</span>
           </div>
-          <div class="muted" style="margin-top:8px">${agent.certCount || 0} certificat(s)</div>
+          <div class="muted" style="margin-top:8px">Matricule : ${agent.matricule || 'N/A'}</div>
+          <div class="muted">Division : ${agent.division || 'GAN'} • Statut : ${agent.status || 'Actif'}</div>
+          <div class="muted">${agent.certCount || 0} certificat(s)</div>
           <div class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
           <div class="row"><button onclick="openAgentModal('${agent.id}')">Ouvrir le dossier</button></div>
         </div>
@@ -538,6 +540,9 @@
       document.getElementById('agentGradeSelect').value = agent.grade || 'Cadet';
       document.getElementById('agentModalInfo').innerHTML =
         '<strong>Nom :</strong> ' + agent.name + '<br>' +
+        '<strong>Matricule :</strong> ' + (agent.matricule || 'N/A') + '<br>' +
+        '<strong>Division :</strong> ' + (agent.division || 'GAN') + '<br>' +
+        '<strong>Statut :</strong> ' + (agent.status || 'Actif') + '<br>' +
         '<strong>Grade :</strong> ' + (agent.grade || 'Cadet') + '<br>' +
         '<strong>Certificats :</strong> ' + (agent.certCount || 0) + '<br>' +
         '<strong>Créé le :</strong> ' + (agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A');

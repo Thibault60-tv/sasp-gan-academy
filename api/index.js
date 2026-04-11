@@ -101,6 +101,18 @@ async function sendDiscordWebhook(url, payload) {
   }
   return { ok: true };
 }
+
+async function getNextMatricule() {
+  const rows = await fetchRows("agents?select=matricule&order=created_at.desc&limit=500");
+  let maxSeq = 0;
+  for (const row of rows) {
+    const val = row.matricule || "";
+    const m = val.match(/^SASP-GAN-(\d{3,4})$/);
+    if (m) maxSeq = Math.max(maxSeq, parseInt(m[1], 10));
+  }
+  return `SASP-GAN-${String(maxSeq + 1).padStart(3, "0")}`;
+}
+
 async function getNextCertificateNumber() {
   const year = new Date().getFullYear();
   const rows = await fetchRows(`certificates?select=certificate_number&certificate_number=like.GAN-${year}-*&order=created_at.desc&limit=300`);
@@ -241,19 +253,19 @@ async function routeAdmins(req, res) {
 }
 async function routeAgents(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
-  const agents = await fetchRows("agents?select=id,name,grade,created_at&order=created_at.desc&limit=100");
+  const agents = await fetchRows("agents?select=id,name,grade,matricule,division,status,created_at&order=created_at.desc&limit=100");
   const certs = await fetchRows("certificates?select=agent_id");
   const counts = {};
   for (const cert of certs) { if (!cert.agent_id) continue; counts[cert.agent_id] = (counts[cert.agent_id] || 0) + 1; }
   return json(res, 200, { ok: true, items: agents.map(a => ({
-    id: a.id, name: a.name, grade: a.grade, createdAt: a.created_at, certCount: counts[a.id] || 0
+    id: a.id, name: a.name, grade: a.grade, matricule: a.matricule, division: a.division, status: a.status, createdAt: a.created_at, certCount: counts[a.id] || 0
   }))});
 }
 async function routeAgentDetails(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
   const id = new URL(req.url, "https://dummy").searchParams.get("id");
   if (!id) return json(res, 400, { ok: false, error: "ID manquant." });
-  const agents = await fetchRows(`agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
+  const agents = await fetchRows(`agents?select=id,name,grade,matricule,division,status,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!agents.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
   const certs = await fetchRows(`certificates?select=id,name,date,signature,comment,mention,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
   const promotions = await fetchRows(`grade_history?select=id,from_grade,to_grade,reason,created_at&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
@@ -263,6 +275,9 @@ async function routeAgentDetails(req, res) {
       id: agents[0].id,
       name: agents[0].name,
       grade: agents[0].grade,
+      matricule: agents[0].matricule,
+      division: agents[0].division,
+      status: agents[0].status,
       createdAt: agents[0].created_at,
       certCount: certs.length
     },
@@ -320,7 +335,7 @@ async function routeCreateCertificate(req, res) {
   if (!name) return json(res, 400, { ok: false, error: "Nom manquant." });
 
   const createdAt = new Date().toISOString();
-  let agentRows = await fetchRows(`agents?select=id,name,grade,created_at&name=eq.${encodeURIComponent(name)}&limit=1`);
+  let agentRows = await fetchRows(`agents?select=id,name,grade,matricule,division,status,created_at&name=eq.${encodeURIComponent(name)}&limit=1`);
   let agentId = null;
   let existingCount = 0;
 
@@ -329,9 +344,10 @@ async function routeCreateCertificate(req, res) {
     const priorCerts = await fetchRows(`certificates?select=id&agent_id=eq.${encodeURIComponent(agentId)}`);
     existingCount = priorCerts.length;
   } else {
+    const newMatricule = await getNextMatricule();
     const newAgentRes = await supabaseRequest("agents", {
       method: "POST",
-      body: JSON.stringify([{ name, grade: "Cadet", created_at: createdAt }])
+      body: JSON.stringify([{ name, grade: "Cadet", matricule: newMatricule, division: "GAN", status: "Actif", created_at: createdAt }])
     });
     const newAgentText = await newAgentRes.text();
     if (!newAgentRes.ok) return json(res, 500, { ok: false, error: newAgentText });
