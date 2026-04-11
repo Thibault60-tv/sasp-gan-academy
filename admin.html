@@ -144,6 +144,7 @@
         <input id="certName" placeholder="Nom RP" />
         <input id="certDate" placeholder="Date" value="11/04/2026" />
         <input id="certSignature" placeholder="Signature commandement" value="SASP Command" />
+        <textarea id="certComment" placeholder="Commentaire (optionnel) — ex: Félicitations pour la réussite de la formation"></textarea>
         <div class="row">
           <button class="primary" onclick="sendCertificate()">Créer PDF Premium + Discord</button>
         </div>
@@ -351,7 +352,8 @@
       const payload = {
         name: document.getElementById('certName').value.trim(),
         date: document.getElementById('certDate').value.trim(),
-        signature: document.getElementById('certSignature').value.trim()
+        signature: document.getElementById('certSignature').value.trim(),
+        comment: document.getElementById('certComment').value.trim()
       };
       const out = await api('/api?action=create_certificate', {
         method: 'POST',
@@ -546,6 +548,7 @@
           <strong>${cert.certificateNumber || 'Sans numéro'}</strong><br>
           <span class="muted">${cert.name || 'Sans nom'} • Date : ${cert.date || 'N/A'} • Signature : ${cert.signature || 'N/A'}</span><br>
           ${cert.mention ? `<span class="pill" style="margin-top:8px">${cert.mention}</span><br>` : ''}
+          ${cert.comment ? `<span class="muted">Commentaire : ${cert.comment}</span><br>` : ''}
           <span class="muted">Créé le : ${cert.createdAt ? new Date(cert.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
         </div>
       `).join('') : '<div class="item muted">Aucun certificat.</div>';

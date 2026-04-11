@@ -268,7 +268,7 @@ async function routeAgentDetails(req, res) {
     },
     promotions: promotions.map(p => ({ id: p.id, fromGrade: p.from_grade, toGrade: p.to_grade, reason: p.reason, createdAt: p.created_at })),
     certificates: certs.map(c => ({
-      id: c.id, name: c.name, date: c.date, signature: c.signature, comment: c.comment || "",
+      id: c.id, name: c.name, date: c.date, signature: c.signature, comment: c.comment || "", comment: c.comment || "",
       mention: c.mention || "", certificateNumber: c.certificate_number || "", createdAt: c.created_at
     }))
   });
@@ -283,7 +283,7 @@ async function routeCertificateDetails(req, res) {
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   const verifyUrl = `${proto}://${host}/verify.html?id=${rows[0].id}`;
   return json(res, 200, { ok: true, certificate: {
-    id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature,
+    id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, comment: rows[0].comment || "",
     comment: rows[0].comment || "", mention: rows[0].mention || "", certificateNumber: rows[0].certificate_number || "",
     verifyUrl, createdAt: rows[0].created_at
   }});
