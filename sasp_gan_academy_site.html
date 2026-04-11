@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SASP Gang & Narcotics Academy</title>
+  <style>
+    :root{
+      --bg:#09090b;
+      --panel:#111113;
+      --panel2:#18181b;
+      --line:#27272a;
+      --text:#f4f4f5;
+      --muted:#a1a1aa;
+      --gold:#f59e0b;
+      --gold2:#fbbf24;
+      --green:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:linear-gradient(to bottom,#0f0f12,#09090b 30%,#050505);
+      color:var(--text);
+    }
+    a{text-decoration:none;color:inherit}
+    .container{max-width:1200px;margin:0 auto;padding:0 24px}
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,.10), transparent 35%),
+        linear-gradient(to right, transparent, rgba(245,158,11,.08), transparent),
+        linear-gradient(to bottom, #111114, #09090b 65%, #000);
+    }
+    .hero-grid,.two-col,.grid-3,.grid-4{display:grid;gap:24px}
+    .hero-grid{grid-template-columns:1.2fr .8fr;align-items:center;padding:80px 0}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .two-col{grid-template-columns:.95fr 1.05fr}
+    .pill{
+      display:inline-flex;align-items:center;
+      border:1px solid rgba(245,158,11,.25);
+      background:rgba(245,158,11,.08);
+      color:#fcd34d;
+      border-radius:999px;padding:8px 14px;font-size:13px;letter-spacing:.08em
+    }
+    h1{font-size:60px;line-height:1.02;margin:20px 0 0;font-weight:800}
+    h2{font-size:38px;line-height:1.1;margin:12px 0 0;font-weight:800}
+    h3{font-size:24px;line-height:1.2;margin:0;font-weight:700}
+    p{line-height:1.7}
+    .lead{max-width:760px;font-size:19px;color:#d4d4d8}
+    .gold{color:var(--gold2)}
+    .actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      border-radius:18px;padding:15px 20px;font-weight:700;
+      border:1px solid var(--line);background:#111113;color:#fafafa;
+      transition:.2s transform,.2s background,.2s border-color;
+      cursor:pointer
+    }
+    .btn:hover{transform:translateY(-1px);border-color:#52525b;background:#18181b}
+    .btn.primary{
+      background:var(--gold2);color:#111;border:none;
+      box-shadow:0 12px 30px rgba(245,158,11,.16)
+    }
+    .btn.primary:hover{transform:translateY(-1px) scale(1.01)}
+    .card{
+      background:rgba(17,17,19,.95);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:24px;
+      box-shadow:0 20px 40px rgba(0,0,0,.18)
+    }
+    .panel{background:#09090b}
+    .stat{background:#09090b;border:1px solid var(--line);border-radius:22px;padding:18px}
+    .stat .label{font-size:13px;color:var(--muted)}
+    .stat .value{margin-top:8px;font-size:28px;font-weight:800;color:var(--gold2)}
+    .section{padding:72px 0}
+    .section.alt{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(24,24,27,.45)}
+    .kicker{font-size:12px;text-transform:uppercase;letter-spacing:.26em;color:var(--gold2)}
+    .muted{color:var(--muted)}
+    .module,.operation,.person,.file-card,.track-card,.cert-card{
+      background:#111113;border:1px solid var(--line);border-radius:28px;padding:24px
+    }
+    .module:hover,.operation:hover{border-color:rgba(245,158,11,.35);transform:translateY(-2px)}
+    .module,.operation{transition:.2s transform,.2s border-color}
+    .bar{width:52px;height:4px;border-radius:999px;background:var(--gold2);margin-bottom:16px}
+    .tag{
+      display:inline-flex;padding:7px 12px;border-radius:999px;
+      border:1px solid rgba(245,158,11,.18);background:rgba(245,158,11,.08);
+      font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:#fcd34d
+    }
+    .list{display:grid;gap:14px;margin-top:28px}
+    .list-item{
+      display:flex;gap:14px;padding:16px;border-radius:20px;border:1px solid var(--line);background:#09090b
+    }
+    .num{
+      width:40px;height:40px;flex:0 0 40px;border-radius:12px;
+      background:var(--gold2);display:flex;align-items:center;justify-content:center;
+      color:#111;font-weight:800
+    }
+    .seal{
+      display:flex;align-items:center;gap:16px;padding:16px;border-radius:22px;background:#09090b;border:1px solid var(--line);margin-bottom:18px
+    }
+    .logo{
+      width:64px;height:64px;border-radius:18px;border:1px solid var(--line);object-fit:cover;background:#fff
+    }
+    .grade-item,.req-item{
+      display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:#09090b
+    }
+    .boxnum{
+      width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);
+      display:flex;align-items:center;justify-content:center;color:var(--gold2);font-weight:800
+    }
+    .people-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:32px}
+    .avatar{
+      width:56px;height:56px;border-radius:18px;background:var(--gold2);
+      display:flex;align-items:center;justify-content:center;color:#111;font-weight:900
+    }
+    .table{
+      margin-top:28px;border:1px solid var(--line);border-radius:20px;overflow:hidden
+    }
+    .thead,.trow{
+      display:grid;grid-template-columns:1.1fr .9fr .8fr .8fr .8fr 1fr
+    }
+    .thead{background:#000;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.18em}
+    .thead div,.trow div{padding:16px;border-top:1px solid var(--line)}
+    .thead div{border-top:none}
+    .trow{background:#09090b;font-size:14px}
+    .status{font-weight:700;color:var(--gold2)}
+    .cert-wrap{
+      background:linear-gradient(to bottom right,#000,#09090b,#111113);
+      border:1px solid rgba(245,158,11,.18)
+    }
+    .certificate{
+      margin-top:28px;border:1px solid var(--line);border-radius:32px;background:#09090b;padding:34px
+    }
+    .certificate-inner{text-align:center}
+    .certificate .small{font-size:11px;text-transform:uppercase;letter-spacing:.35em;color:#71717a}
+    .certificate .name{margin-top:18px;font-size:30px;font-weight:800;color:var(--gold2)}
+    .certificate .foot{margin-top:28px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:14px}
+    input,textarea{
+      width:100%;background:#09090b;border:1px solid var(--line);border-radius:18px;
+      padding:16px;color:#fafafa;font:inherit
+    }
+    textarea{min-height:140px;resize:vertical}
+    footer{border-top:1px solid var(--line);padding:28px 0;background:#09090b}
+    .footer-row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+    @media (max-width: 1100px){
+      .hero-grid,.two-col,.grid-4,.grid-3,.people-grid{grid-template-columns:1fr 1fr}
+      h1{font-size:48px}
+    }
+    @media (max-width: 760px){
+      .hero-grid,.two-col,.grid-4,.grid-3,.people-grid{grid-template-columns:1fr}
+      .thead,.trow{grid-template-columns:repeat(2,1fr)}
+      h1{font-size:38px}
+      h2{font-size:30px}
+      .lead{font-size:17px}
+    }
+    @media print{
+      .actions,.no-print,footer,#recrutement,.hero,.section:not(#certification){display:none !important}
+      body{background:#fff;color:#000}
+      #certification{padding:0}
+      .container{max-width:none;padding:0}
+      .cert-wrap,.certificate,.card,.panel{box-shadow:none;border:none;background:#fff}
+      .certificate .small,.muted{color:#444}
+      .certificate .name,.gold{color:#000}
+    }
+  </style>
+</head>
+<body>
+  <script>
+    const academyConfig = {
+      academyName: "SASP Gang & Narcotics Academy",
+      discordUrl: "https://discord.gg/votre-serveur",
+      applicationUrl: "#recrutement",
+      certificateName: "Nom RP",
+      certificateDate: "11/04/2026",
+      commanderSignature: "SASP Command",
+      logoUrl: "https://placehold.co/160x160/png?text=SASP"
+    };
+
+    const modules = [
+      { title: "Formation de base", desc: "Introduction au rôle de l’unité Gang & Narcotics, cadre RP, discipline, communication et procédures fondamentales." },
+      { title: "Enquêtes narcotiques", desc: "Surveillance, collecte de preuves, exploitation d’informateurs, analyse criminelle et préparation d’opérations ciblées." },
+      { title: "Intervention tactique", desc: "Approches à risque, sécurisation de périmètre, arrestations coordonnées, usage proportionné de la force et gestion post-opération." },
+      { title: "Raid avancé / SWAT", desc: "Stack, breach, clearing, couverture d’angles, hiérarchie opérationnelle et progression pièce par pièce." }
+    ];
+
+    const grades = ["Cadet","Recrue","Officier GAN","Agent GAN","Agent GAN Senior","Élite GAN"];
+    const exams = [
+      "QCM théorique avec correction et notation automatique",
+      "Mise en situation pratique avec observation instructeur",
+      "Raid avancé avec évaluation tactique complète",
+      "Rapport opérationnel final à remettre à la hiérarchie"
+    ];
+    const instructors = [
+      { name:"Commander J. Miller", role:"Directeur d’académie", desc:"Supervise la doctrine, valide les certifications et encadre les opérations de niveau avancé." },
+      { name:"Lt. R. Dawson", role:"Chef formation tactique", desc:"Responsable des modules SWAT, du CQB, des raids et de la discipline opérationnelle." },
+      { name:"Sgt. L. Carter", role:"Instructeur enquêtes", desc:"Spécialisé en surveillance, informateurs, filatures et rédaction de rapports." }
+    ];
+    const requirements = [
+      "Discipline irréprochable",
+      "Communication radio claire",
+      "Role-play sérieux et constant",
+      "Capacité à travailler en équipe",
+      "Respect total de la hiérarchie",
+      "Disponibilité pour examens et entraînements"
+    ];
+    const stats = [
+      ["Agents certifiés", "48"],
+      ["Opérations menées", "126"],
+      ["Taux de réussite", "87%"],
+      ["Niveau actuel", "ELITE MASTER"]
+    ];
+    const operations = [
+      { title:"Operation Black Tide", tag:"Raid narcotics", desc:"Neutralisation d’un laboratoire clandestin et arrestation coordonnée de plusieurs suspects à haut risque." },
+      { title:"Operation Ghost Wire", tag:"Surveillance", desc:"Filature longue durée, collecte de preuves et exploitation d’une chaîne logistique liée au trafic." },
+      { title:"Operation Iron Seal", tag:"High-Risk Entry", desc:"Entrée tactique avec sécurisation de périmètre, fouille complète et saisie d’armes et de stupéfiants." }
+    ];
+    const certifications = [
+      "Certification GAN Basic",
+      "Certification Surveillance & Case Building",
+      "Certification Tactical Entry",
+      "Certification Raid Command"
+    ];
+    const swatSteps = [
+      "Briefing commandement et répartition des rôles",
+      "Mise en place du périmètre externe et interne",
+      "Annonce légale et sommations RP",
+      "Breach contrôlé et entrée en stack",
+      "Clearing pièce par pièce avec couverture d’angles",
+      "Sécurisation, fouille, saisie et extraction"
+    ];
+    const recruits = [
+      { name:"M. Hayes", grade:"Recrue", theory:"34/40", practical:"22/30", raid:"24/30", status:"Opérationnel" },
+      { name:"A. Brooks", grade:"Cadet", theory:"28/40", practical:"18/30", raid:"12/30", status:"En formation" },
+      { name:"D. Walker", grade:"Officier GAN", theory:"39/40", practical:"27/30", raid:"29/30", status:"Élite" },
+      { name:"S. Price", grade:"Recrue", theory:"31/40", practical:"20/30", raid:"19/30", status:"Surveillance" }
+    ];
+    const files = [
+      { code:"GAN-001", level:"Confidential", title:"Internal Narcotics Handling SOP" },
+      { code:"GAN-014", level:"Restricted", title:"High-Risk Entry and Raid Protocol" },
+      { code:"GAN-027", level:"Command Only", title:"Informant Protection & Case Building" }
+    ];
+
+    function initials(name){
+      return name.split(" ").map(p => p[0]).join("").slice(0,2);
+    }
+
+    function renderList(items, renderer){
+      return items.map(renderer).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("academyName").textContent = academyConfig.academyName;
+      document.getElementById("heroLogo").src = academyConfig.logoUrl;
+      document.getElementById("heroLogo").alt = "Logo SASP";
+      document.getElementById("certificateName").textContent = academyConfig.certificateName;
+      document.getElementById("certificateDate").textContent = academyConfig.certificateDate;
+      document.getElementById("commanderSignature").textContent = academyConfig.commanderSignature;
+      document.getElementById("discordBtn").href = academyConfig.discordUrl;
+      document.getElementById("discordBtn2").href = academyConfig.discordUrl;
+      document.getElementById("applyBtn").href = academyConfig.applicationUrl;
+
+      document.getElementById("statsGrid").innerHTML = renderList(stats, ([label, value]) => `
+        <div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>
+      `);
+
+      document.getElementById("modulesGrid").innerHTML = renderList(modules, (m) => `
+        <div class="module"><div class="bar"></div><h3>${m.title}</h3><p class="muted">${m.desc}</p></div>
+      `);
+
+      document.getElementById("swatList").innerHTML = renderList(swatSteps, (step, i) => `
+        <div class="list-item"><div class="num">${i+1}</div><div>${step}</div></div>
+      `);
+
+      document.getElementById("filesList").innerHTML = renderList(files, (file) => `
+        <div class="file-card">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <strong>${file.code}</strong>
+            <span class="tag">${file.level}</span>
+          </div>
+          <div class="muted" style="margin-top:10px">${file.title}</div>
+        </div>
+      `);
+
+      document.getElementById("examsList").innerHTML = renderList(exams, (item, i) => `
+        <div class="list-item"><div class="num">${i+1}</div><div>${item}</div></div>
+      `);
+
+      document.getElementById("gradesList").innerHTML = renderList(grades, (g, i) => `
+        <div class="grade-item"><div class="boxnum">${i+1}</div><div>${g}</div></div>
+      `);
+
+      document.getElementById("operationsGrid").innerHTML = renderList(operations, (op) => `
+        <div class="operation">
+          <span class="tag">${op.tag}</span>
+          <h3 style="margin-top:18px">${op.title}</h3>
+          <p class="muted">${op.desc}</p>
+          <button class="btn" style="margin-top:10px">Ouvrir le dossier</button>
+        </div>
+      `);
+
+      document.getElementById("instructorsGrid").innerHTML = renderList(instructors, (person) => `
+        <div class="person">
+          <div class="avatar">${initials(person.name)}</div>
+          <h3 style="margin-top:18px">${person.name}</h3>
+          <div class="gold" style="margin-top:6px;font-weight:600">${person.role}</div>
+          <p class="muted">${person.desc}</p>
+        </div>
+      `);
+
+      document.getElementById("recruitsTable").innerHTML = renderList(recruits, (r) => `
+        <div class="trow">
+          <div>${r.name}</div>
+          <div>${r.grade}</div>
+          <div>${r.theory}</div>
+          <div>${r.practical}</div>
+          <div>${r.raid}</div>
+          <div class="status">${r.status}</div>
+        </div>
+      `);
+
+      document.getElementById("certificationsList").innerHTML = renderList(certifications, (c) => `
+        <div class="req-item">${c}</div>
+      `);
+
+      document.getElementById("requirementsList").innerHTML = renderList(requirements, (r) => `
+        <div class="req-item">${r}</div>
+      `);
+    });
+
+    function printCertificate(){ window.print(); }
+  </script>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="pill">SASP • Federal Academy Interface</div>
+        <h1>Académie officielle <span class="gold">SASP GAN</span></h1>
+        <p class="lead">Une plateforme immersive pensée comme un véritable portail fédéral pour former, évaluer, certifier et recruter les agents de l’unité Gang & Narcotics.</p>
+        <div class="actions">
+          <a class="btn primary" href="#programmes">Voir les formations</a>
+          <a class="btn" href="#swat">Section SWAT</a>
+          <a class="btn" href="#recrutement">Recrutement</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="seal">
+          <img id="heroLogo" class="logo" src="" alt="">
+          <div>
+            <div class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.2em">Official Seal</div>
+            <div style="font-size:18px;font-weight:700">Gang & Narcotics Division</div>
+          </div>
+        </div>
+        <div class="grid-4" id="statsGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="programmes" class="section">
+    <div class="container">
+      <div style="display:flex;justify-content:space-between;gap:24px;align-items:end;flex-wrap:wrap">
+        <div>
+          <div class="kicker">Programme</div>
+          <h2>Parcours de formation</h2>
+        </div>
+        <div class="muted" style="max-width:700px">Chaque module est construit pour développer la cohérence RP, la maîtrise procédurale, le commandement et la précision tactique.</div>
+      </div>
+      <div class="grid-4" id="modulesGrid" style="margin-top:32px"></div>
+    </div>
+  </section>
+
+  <section id="swat" class="section alt">
+    <div class="container two-col">
+      <div>
+        <div class="kicker">Tactical Command</div>
+        <h2>Section spéciale SWAT</h2>
+        <p class="muted" style="max-width:760px">Cette section centralise les protocoles d’entrée à haut risque, la coordination d’assaut, les rôles de stack et les étapes de sécurisation post-raid dans un cadre role-play professionnel.</p>
+        <div class="list" id="swatList"></div>
+      </div>
+      <div class="card panel">
+        <div class="kicker">Access level</div>
+        <h3 style="margin-top:10px">Dossiers confidentiels</h3>
+        <div class="list" id="filesList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="examens" class="section">
+    <div class="container two-col">
+      <div>
+        <div class="kicker">Évaluation</div>
+        <h2>Examens et certification</h2>
+        <div class="list" id="examsList"></div>
+      </div>
+      <div class="card panel">
+        <h3>Barème instructeur</h3>
+        <div class="list">
+          <div class="list-item"><div>Théorie</div><div style="margin-left:auto;font-weight:800;color:var(--gold2)">40 pts</div></div>
+          <div class="list-item"><div>Pratique</div><div style="margin-left:auto;font-weight:800;color:var(--gold2)">30 pts</div></div>
+          <div class="list-item"><div>Raid avancé</div><div style="margin-left:auto;font-weight:800;color:var(--gold2)">30 pts</div></div>
+          <div class="list-item"><div>Total requis</div><div style="margin-left:auto;font-weight:800;color:var(--gold2)">75 / 100</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="operations" class="section alt">
+    <div class="container">
+      <div class="kicker">Archives</div>
+      <h2>Galerie d’opérations</h2>
+      <div class="grid-3" id="operationsGrid" style="margin-top:32px"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container two-col">
+      <div class="card">
+        <div class="kicker">Hiérarchie</div>
+        <h2>Progression des grades</h2>
+        <div class="list" id="gradesList"></div>
+      </div>
+      <div class="card">
+        <div class="kicker">Doctrine</div>
+        <h2>Principes de l’unité</h2>
+        <div class="grid-3" style="grid-template-columns:repeat(2,1fr);margin-top:24px">
+          <div class="req-item">Le RP avant la victoire</div>
+          <div class="req-item">La sécurité avant la vitesse</div>
+          <div class="req-item">Le collectif avant l’individuel</div>
+          <div class="req-item">La preuve avant l’intervention</div>
+          <div class="req-item">La hiérarchie avant l’improvisation</div>
+          <div class="req-item">Le professionnalisme avant l’ego</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="instructeurs" class="section alt">
+    <div class="container">
+      <div class="kicker">Encadrement</div>
+      <h2>Équipe instructeurs</h2>
+      <div class="people-grid" id="instructorsGrid"></div>
+    </div>
+  </section>
+
+  <section id="tracking" class="section">
+    <div class="container">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:end">
+          <div>
+            <div class="kicker">Suivi interne</div>
+            <h2>Tableau des recrues</h2>
+          </div>
+          <div class="muted">Mise à jour quotidienne par le commandement académique</div>
+        </div>
+        <div class="table">
+          <div class="thead">
+            <div>Nom</div><div>Grade</div><div>Théorie</div><div>Pratique</div><div>Raid</div><div>Statut</div>
+          </div>
+          <div id="recruitsTable"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="certification" class="section alt">
+    <div class="container two-col">
+      <div class="card">
+        <div class="kicker">Certification</div>
+        <h2>Parcours validants</h2>
+        <div class="list" id="certificationsList"></div>
+      </div>
+      <div class="card cert-wrap">
+        <div class="kicker">Document officiel</div>
+        <h2>Certificat d’académie</h2>
+        <div class="certificate">
+          <div class="certificate-inner">
+            <div class="small">San Andreas State Police</div>
+            <h3 style="margin-top:18px;font-size:32px">Certificate of Qualification</h3>
+            <p class="muted" style="margin-top:22px">Ce document certifie que</p>
+            <div class="name" id="certificateName"></div>
+            <p class="muted" style="margin-top:22px">a satisfait les exigences de l’Académie SASP Gang & Narcotics et est reconnu apte aux opérations réglementées de l’unité.</p>
+            <div class="foot">
+              <span id="certificateDate"></span>
+              <span id="commanderSignature"></span>
+            </div>
+          </div>
+        </div>
+        <button class="btn primary no-print" style="margin-top:18px" onclick="printCertificate()">Imprimer / télécharger le certificat</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="recrutement" class="section">
+    <div class="container two-col">
+      <div class="card">
+        <div class="kicker">Candidature</div>
+        <h2>Conditions d’admission</h2>
+        <div class="list" id="requirementsList"></div>
+      </div>
+      <div class="card cert-wrap">
+        <div class="kicker">Formulaire</div>
+        <h2>Déposer une candidature</h2>
+        <div class="list">
+          <input placeholder="Nom RP">
+          <input placeholder="Âge RP">
+          <input placeholder="Identifiant Discord">
+          <textarea placeholder="Motivation, expérience RP, disponibilités"></textarea>
+          <div class="actions">
+            <a class="btn primary" id="applyBtn" href="#">Envoyer la candidature</a>
+            <a class="btn" id="discordBtn" href="#" target="_blank" rel="noreferrer">Rejoindre le Discord</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-row">
+      <div id="academyName"></div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <span>Formation</span>
+        <span>SWAT</span>
+        <span>Examens</span>
+        <span>Opérations</span>
+        <span>Suivi</span>
+        <span>Certification</span>
+        <span>Recrutement</span>
+        <a id="discordBtn2" href="#" target="_blank" rel="noreferrer">Discord</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
