@@ -1,7 +1,8 @@
-const { requireAdmin, parseJson, supabaseRequest } = require("./_auth");
+const { requireRole, parseJson, supabaseRequest } = require("./_auth");
 
 module.exports = async (req, res) => {
-  if (!requireAdmin(req, res)) return;
+  const payload = requireRole(req, res, ["admin"]);
+  if (!payload) return;
 
   try {
     if (req.method === "GET") {
@@ -26,13 +27,17 @@ module.exports = async (req, res) => {
     if (req.method === "POST") {
       const body = await parseJson(req);
       if (!body.username) return res.status(400).json({ ok: false, error: "Username manquant." });
-
       const createdAt = new Date().toISOString();
+
+      const password = body.password || "ChangeMe123!";
+      const role = body.role || "accueil";
+
       const dbRes = await supabaseRequest("admin_accounts", {
         method: "POST",
         body: JSON.stringify([{
           username: body.username,
-          role: body.role || "admin",
+          password,
+          role,
           created_at: createdAt
         }])
       });
@@ -42,13 +47,13 @@ module.exports = async (req, res) => {
       await supabaseRequest("action_logs", {
         method: "POST",
         body: JSON.stringify([{
-          action: "Admin créé",
-          details: `${body.username} • ${body.role || "admin"}`,
+          action: "Compte créé",
+          details: `${body.username} • ${role}`,
           created_at: createdAt
         }])
       });
 
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ ok: true, defaultPassword: password });
     }
 
     return res.status(405).json({ ok: false, error: "Méthode non autorisée." });

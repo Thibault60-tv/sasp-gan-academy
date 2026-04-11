@@ -1,16 +1,16 @@
-const { parseJson, requireAdmin, supabaseRequest } = require("./_auth");
+const { parseJson, requireRole, supabaseRequest } = require("./_auth");
 const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée." });
-  if (!requireAdmin(req, res)) return;
+  const payload = requireRole(req, res, ["admin", "formateur"]);
+  if (!payload) return;
 
   try {
     const body = await parseJson(req);
     const { name, date, signature } = body;
     const createdAt = new Date().toISOString();
-
     if (!name) return res.status(400).json({ ok: false, error: "Nom manquant." });
 
     let agentId = null;
@@ -37,20 +37,13 @@ module.exports = async (req, res) => {
 
     const dbRes = await supabaseRequest("certificates", {
       method: "POST",
-      body: JSON.stringify([{
-        agent_id: agentId,
-        name,
-        date: date || null,
-        signature: signature || null,
-        created_at: createdAt
-      }])
+      body: JSON.stringify([{ agent_id: agentId, name, date: date || null, signature: signature || null, created_at: createdAt }])
     });
-
     const dbText = await dbRes.text();
     if (!dbRes.ok) return res.status(500).json({ ok: false, error: dbText });
-
     const rows = JSON.parse(dbText);
     const cert = rows[0];
+
     const host = req.headers["x-forwarded-proto"] && req.headers["x-forwarded-host"]
       ? `${req.headers["x-forwarded-proto"]}://${req.headers["x-forwarded-host"]}`
       : `https://${req.headers.host}`;
@@ -71,10 +64,7 @@ module.exports = async (req, res) => {
     doc.roundedRect(65, 200, 465, 260, 18).strokeColor("#33343a").lineWidth(1).stroke();
     doc.fillColor("#d1d5db").fontSize(16).text("Ce document certifie que", 40, 235, { align: "center" });
     doc.fillColor("#fbbf24").fontSize(34).text(name, 40, 275, { align: "center" });
-    doc.fillColor("#d1d5db").fontSize(15).text(
-      "a satisfait les exigences de la SASP GAN Academy et est reconnu apte aux opérations réglementées de l'unité.",
-      95, 335, { width: 405, align: "center" }
-    );
+    doc.fillColor("#d1d5db").fontSize(15).text("a satisfait les exigences de la SASP GAN Academy et est reconnu apte aux opérations réglementées de l'unité.", 95, 335, { width: 405, align: "center" });
     doc.moveTo(90, 420).lineTo(500, 420).strokeColor("#33343a").stroke();
     doc.fillColor("#e5e7eb").fontSize(13).text(`Date : ${date || "Non renseignée"}`, 95, 438);
     doc.text(`Signature : ${signature || "Non renseignée"}`, 360, 438, { width: 140, align: "right" });
@@ -84,16 +74,14 @@ module.exports = async (req, res) => {
     doc.image(qrBuffer, 225, 520, { fit: [140, 140] });
     doc.fillColor("#9ca3af").fontSize(10).text("Scanner pour vérifier l'authenticité", 40, 675, { align: "center" });
     doc.fillColor("#9ca3af").fontSize(9).text(verifyUrl, 70, 695, { width: 460, align: "center" });
-
     doc.end();
     await pdfReady;
-    const pdfBuffer = Buffer.concat(chunks);
-    const pdfBase64 = pdfBuffer.toString("base64");
-    const pdfUrl = `data:application/pdf;base64,${pdfBase64}`;
 
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    if (webhookUrl) {
-      await fetch(webhookUrl, {
+    const pdfBuffer = Buffer.concat(chunks);
+    const pdfUrl = `data:application/pdf;base64,${pdfBuffer.toString("base64")}`;
+
+    if (process.env.DISCORD_WEBHOOK_URL) {
+      await fetch(process.env.DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,7 +95,7 @@ module.exports = async (req, res) => {
               { name: "Signature", value: signature || "Non renseignée", inline: true },
               { name: "Vérification", value: verifyUrl }
             ],
-            footer: { text: "SASP GAN Academy • PDF Dispatch" },
+            footer: { text: `SASP GAN Academy • ${payload.role}` },
             timestamp: createdAt
           }]
         })
@@ -116,11 +104,7 @@ module.exports = async (req, res) => {
 
     await supabaseRequest("action_logs", {
       method: "POST",
-      body: JSON.stringify([{
-        action: "Certificat PDF envoyé",
-        details: `${name} • ${date || "Sans date"}`,
-        created_at: createdAt
-      }])
+      body: JSON.stringify([{ action: "Certificat PDF envoyé", details: `${name} • ${date || "Sans date"} • ${payload.role}`, created_at: createdAt }])
     });
 
     return res.status(200).json({ ok: true, verifyUrl, pdfUrl });

@@ -1,8 +1,9 @@
-const { requireAdmin, parseJson, supabaseRequest } = require("./_auth");
+const { requireRole, parseJson, supabaseRequest } = require("./_auth");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée." });
-  if (!requireAdmin(req, res)) return;
+  const payload = requireRole(req, res, ["admin"]);
+  if (!payload) return;
 
   try {
     const body = await parseJson(req);
@@ -17,11 +18,7 @@ module.exports = async (req, res) => {
 
     await supabaseRequest("action_logs", {
       method: "POST",
-      body: JSON.stringify([{
-        action: "Grade mis à jour",
-        details: `${body.agentId} • ${body.grade}`,
-        created_at: new Date().toISOString()
-      }])
+      body: JSON.stringify([{ action: "Grade mis à jour", details: `${body.agentId} • ${body.grade}`, created_at: new Date().toISOString() }])
     });
 
     return res.status(200).json({ ok: true });

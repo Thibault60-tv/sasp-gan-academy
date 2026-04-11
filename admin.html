@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — SASP GAN Academy GOD MODE</title>
+  <title>Admin — SASP GAN Academy</title>
   <style>
     :root{
-      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--blue:#93c5fd;
+      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top, rgba(251,191,36,.08), transparent 25%), linear-gradient(180deg,#111214,#09090b);color:var(--text)}
@@ -19,12 +19,13 @@
     .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:16px}
     .stat .label{font-size:13px;color:var(--muted)}
     .stat .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
-    input,select{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
+    input,select,textarea{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
+    textarea{min-height:120px;resize:vertical}
     button,a.btn{padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .primary{background:var(--gold);color:#111;border:none}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
     .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
-    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#86efac}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     .list{display:grid;gap:12px}
     .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
@@ -34,6 +35,7 @@
     .agent-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
     .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
     .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .hidden{display:none !important}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
     .modal{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
     .cert-list{display:grid;gap:10px;margin-top:12px}
@@ -45,8 +47,9 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">Section SASP</div>
+        <div class="badge">RÔLES DYNAMIQUES</div>
         <h1>SASP GAN Academy — Panel Admin</h1>
+        <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
       <div class="row">
         <button onclick="refreshAll()">Actualiser</button>
@@ -62,7 +65,7 @@
     </div>
 
     <div class="grid">
-      <div class="card">
+      <div class="card" id="sectionCertificates">
         <h2>Envoyer un certificat PDF</h2>
         <input id="certName" placeholder="Nom RP" />
         <input id="certDate" placeholder="Date" value="11/04/2026" />
@@ -78,36 +81,48 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="sectionAdmins">
         <h2>Admins & rôles</h2>
         <div class="admin-grid">
           <input id="adminUsername" placeholder="Nom d'utilisateur admin" />
           <select id="adminRole">
-            <option value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
-            <option value="instructeur">Instructeur</option>
+            <option value="formateur">Formateur</option>
+            <option value="accueil">Accueil</option>
           </select>
         </div>
         <div class="row">
-          <button onclick="createAdmin()">Créer un admin</button>
+          <button onclick="createAdmin()">Créer un compte</button>
         </div>
         <div id="adminMsg" class="msg"></div>
         <div id="admins" class="list" style="margin-top:14px"><div class="item muted">Chargement...</div></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="sectionLogs">
         <h2>Journal d'actions</h2>
         <div id="logs" class="list"><div class="item muted">Chargement...</div></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="sectionAgents">
         <h2>Dossiers Agents</h2>
         <div id="agents" class="agent-grid"><div class="item muted">Chargement...</div></div>
       </div>
 
-      <div class="card" style="grid-column:1 / -1">
+      <div class="card" id="sectionApplications" style="grid-column:1 / -1">
         <h2>Candidatures reçues</h2>
         <div id="applications" class="list"><div class="item muted">Chargement...</div></div>
+      </div>
+
+      <div class="card hidden" id="sectionAccueilForm" style="grid-column:1 / -1">
+        <h2>Déposer une candidature</h2>
+        <input id="candidateName" placeholder="Nom RP" />
+        <input id="candidateAge" placeholder="Âge RP" />
+        <input id="candidateDiscord" placeholder="Identifiant Discord" />
+        <textarea id="candidateMotivation" placeholder="Motivation, expérience RP, disponibilités"></textarea>
+        <div class="row">
+          <button class="primary" onclick="submitCandidateFromAdmin()">Déposer la candidature</button>
+        </div>
+        <div id="candidateMsg" class="msg"></div>
       </div>
     </div>
   </div>
@@ -127,7 +142,7 @@
           <h3>Informations</h3>
           <div id="agentModalInfo" class="muted">Chargement...</div>
         </div>
-        <div class="card">
+        <div class="card" id="agentGradeCard">
           <h3>Promouvoir / modifier grade</h3>
           <select id="agentGradeSelect">
             <option>Cadet</option>
@@ -153,6 +168,23 @@
 
   <script>
     let currentAgentId = null;
+    let currentUserRole = 'admin';
+
+    function canAdmin() { return currentUserRole === 'admin'; }
+    function canTrainer() { return currentUserRole === 'admin' || currentUserRole === 'formateur'; }
+    function canReception() { return currentUserRole === 'admin' || currentUserRole === 'accueil'; }
+
+    function applyRoleUI() {
+      document.getElementById('currentRole').innerText = currentUserRole;
+
+      document.getElementById('sectionAdmins').classList.toggle('hidden', !canAdmin());
+      document.getElementById('sectionLogs').classList.toggle('hidden', !canAdmin());
+      document.getElementById('sectionCertificates').classList.toggle('hidden', !canTrainer());
+      document.getElementById('sectionAgents').classList.toggle('hidden', !canTrainer());
+      document.getElementById('sectionApplications').classList.toggle('hidden', !canReception());
+      document.getElementById('sectionAccueilForm').classList.toggle('hidden', !canReception());
+      document.getElementById('agentGradeCard').classList.toggle('hidden', !canAdmin());
+    }
 
     async function api(path, options = {}) {
       const res = await fetch(path, options);
@@ -183,37 +215,39 @@
       return new Blob(byteArrays, { type: contentType });
     }
 
+    async function loadSessionRole() {
+      const out = await api('/api/session');
+      if (!out || !out.data.ok) return;
+      currentUserRole = out.data.role || 'admin';
+      applyRoleUI();
+    }
+
     async function sendCertificate() {
+      if (!canTrainer()) return;
       const payload = {
         name: document.getElementById('certName').value.trim(),
         date: document.getElementById('certDate').value.trim(),
         signature: document.getElementById('certSignature').value.trim()
       };
-
       const out = await api('/api/create-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-
       if (!out) return;
 
       if (out.data.ok) {
         setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord.');
-
         const linkBox = document.getElementById('certLinkBox');
         const actions = document.getElementById('certActions');
         const pdf = document.getElementById('pdfDownload');
         const verify = document.getElementById('verifyLink');
-
         const base64 = out.data.pdfUrl.split(',')[1];
         const blob = b64toBlob(base64, 'application/pdf');
         const url = URL.createObjectURL(blob);
-
         pdf.href = url;
         pdf.download = 'Certificat_SASP_' + payload.name + '.pdf';
         verify.href = out.data.verifyUrl;
-
         linkBox.style.display = 'block';
         actions.style.display = 'flex';
         linkBox.innerHTML =
@@ -222,11 +256,36 @@
       } else {
         setMsg('certMsg', 'err', out.data.error || 'Erreur.');
       }
-
       refreshAll();
     }
 
+    async function submitCandidateFromAdmin() {
+      if (!canReception()) return;
+      const payload = {
+        candidateName: document.getElementById('candidateName').value.trim(),
+        candidateAge: document.getElementById('candidateAge').value.trim(),
+        candidateDiscord: document.getElementById('candidateDiscord').value.trim(),
+        candidateMotivation: document.getElementById('candidateMotivation').value.trim()
+      };
+      const out = await api('/api/submit-application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!out) return;
+      setMsg('candidateMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Candidature déposée.' : (out.data.error || 'Erreur.'));
+      if (out.data.ok) {
+        document.getElementById('candidateName').value = '';
+        document.getElementById('candidateAge').value = '';
+        document.getElementById('candidateDiscord').value = '';
+        document.getElementById('candidateMotivation').value = '';
+      }
+      refreshApplications();
+      refreshLogs();
+    }
+
     async function refreshApplications() {
+      if (!canReception()) return;
       const out = await api('/api/applications');
       if (!out) return;
       const box = document.getElementById('applications');
@@ -247,6 +306,7 @@
     }
 
     async function refreshLogs() {
+      if (!canAdmin()) return;
       const out = await api('/api/logs');
       if (!out) return;
       const box = document.getElementById('logs');
@@ -264,6 +324,7 @@
     }
 
     async function refreshAgents() {
+      if (!canTrainer()) return;
       const out = await api('/api/agents');
       if (!out) return;
       const box = document.getElementById('agents');
@@ -290,6 +351,7 @@
     }
 
     async function refreshAdmins() {
+      if (!canAdmin()) return;
       const out = await api('/api/admins');
       if (!out) return;
       const box = document.getElementById('admins');
@@ -309,6 +371,7 @@
     }
 
     async function createAdmin() {
+      if (!canAdmin()) return;
       const payload = {
         username: document.getElementById('adminUsername').value.trim(),
         role: document.getElementById('adminRole').value
@@ -319,12 +382,13 @@
         body: JSON.stringify(payload)
       });
       if (!out) return;
-      setMsg('adminMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Admin créé.' : (out.data.error || 'Erreur.'));
+      setMsg('adminMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Compte créé.' : (out.data.error || 'Erreur.'));
       refreshAdmins();
       refreshLogs();
     }
 
     async function openAgentModal(agentId) {
+      if (!canTrainer()) return;
       currentAgentId = agentId;
       document.getElementById('agentModalBackdrop').style.display = 'flex';
       document.getElementById('agentModalInfo').innerHTML = 'Chargement...';
@@ -359,7 +423,7 @@
     }
 
     async function updateAgentGrade() {
-      if (!currentAgentId) return;
+      if (!canAdmin() || !currentAgentId) return;
       const grade = document.getElementById('agentGradeSelect').value;
       const out = await api('/api/update-agent-grade', {
         method: 'POST',
@@ -378,7 +442,8 @@
       window.location.href = '/login.html';
     }
 
-    function refreshAll() {
+    async function refreshAll() {
+      await loadSessionRole();
       refreshApplications();
       refreshLogs();
       refreshAgents();

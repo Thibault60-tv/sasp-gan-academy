@@ -36,6 +36,10 @@ function verifyToken(token, secret) {
   return payload;
 }
 
+function parseRole(payload) {
+  return payload && payload.role ? payload.role : "admin";
+}
+
 function requireAdmin(req, res) {
   const secret = process.env.ADMIN_TOKEN_SECRET;
   if (!secret) {
@@ -45,8 +49,19 @@ function requireAdmin(req, res) {
   const cookies = parseCookies(req.headers.cookie || "");
   const token = cookies.gan_admin_token;
   const payload = verifyToken(token, secret);
-  if (!payload || payload.role !== "admin") {
+  if (!payload) {
     res.status(401).json({ ok: false, error: "Accès refusé." });
+    return null;
+  }
+  return payload;
+}
+
+function requireRole(req, res, allowedRoles) {
+  const payload = requireAdmin(req, res);
+  if (!payload) return null;
+  const role = parseRole(payload);
+  if (!allowedRoles.includes(role)) {
+    res.status(403).json({ ok: false, error: "Permissions insuffisantes." });
     return null;
   }
   return payload;
@@ -73,4 +88,4 @@ async function supabaseRequest(path, options = {}) {
   });
 }
 
-module.exports = { parseJson, signToken, requireAdmin, supabaseRequest };
+module.exports = { parseJson, parseCookies, signToken, verifyToken, requireAdmin, requireRole, supabaseRequest };

@@ -1,24 +1,25 @@
-const { requireAdmin, supabaseRequest } = require("./_auth");
+const { requireRole, supabaseRequest } = require("./_auth");
 
 module.exports = async (req, res) => {
-  if (!requireAdmin(req, res)) return;
+  const payload = requireRole(req, res, ["admin", "formateur"]);
+  if (!payload) return;
   try {
     const id = req.query.id;
     if (!id) return res.status(400).json({ ok: false, error: "ID manquant." });
 
-    const agentRes = await supabaseRequest(
-      `agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`,
-      { method: "GET", headers: { Prefer: "" } }
-    );
+    const agentRes = await supabaseRequest(`agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`, {
+      method: "GET",
+      headers: { Prefer: "" }
+    });
     const agentText = await agentRes.text();
     if (!agentRes.ok) return res.status(500).json({ ok: false, error: agentText });
     const agents = JSON.parse(agentText);
     if (!agents.length) return res.status(404).json({ ok: false, error: "Agent introuvable." });
 
-    const certRes = await supabaseRequest(
-      `certificates?select=id,name,date,signature,created_at,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`,
-      { method: "GET", headers: { Prefer: "" } }
-    );
+    const certRes = await supabaseRequest(`certificates?select=id,name,date,signature,created_at,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`, {
+      method: "GET",
+      headers: { Prefer: "" }
+    });
     const certText = await certRes.text();
     if (!certRes.ok) return res.status(500).json({ ok: false, error: certText });
     const certs = JSON.parse(certText);
