@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Vérification Certificat</title></head>
+<body style="background:black;color:white;text-align:center;padding-top:100px">
+<h1>Vérification Certificat</h1>
+<div id="result">Chargement...</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+fetch("/api/verify?id=" + id)
+.then(r=>r.json())
+.then(d=>{
+  if(d.valid){
+    document.getElementById("result").innerHTML = "Certificat VALIDE<br>"+d.name;
+  }else{
+    document.getElementById("result").innerHTML = "Certificat INVALIDE";
+  }
+});
+</script>
+</body>
+</html>
