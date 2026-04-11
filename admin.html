@@ -3,41 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — SASP GAN Academy</title>
+  <title>Admin — SASP GAN Academy GOD MODE</title>
   <style>
-    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1400px;margin:0 auto;padding:24px}
+    :root{
+      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--blue:#93c5fd;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top, rgba(251,191,36,.08), transparent 25%), linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:1450px;margin:0 auto;padding:24px}
     .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:24px}
+    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+    .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .stat .label{font-size:13px;color:var(--muted)}
+    .stat .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
     input,select{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
     button,a.btn{padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .primary{background:var(--gold);color:#111;border:none}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
     .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
-    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#86efac}
+    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     .list{display:grid;gap:12px}
     .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
     .muted{color:var(--muted)}
     .linkbox{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#09090b;word-break:break-all}
     .agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    @media (max-width:1100px){.grid,.agent-grid{grid-template-columns:1fr}}
+    .agent-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
+    .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
+    .cert-list{display:grid;gap:10px;margin-top:12px}
+    .cert-item{background:#09090b;border:1px solid var(--line);border-radius:14px;padding:12px}
+    @media (max-width:1100px){.grid,.admin-grid,.agent-grid,.stats{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">ELITE MASTER ADMIN</div>
+        <div class="badge">FULL GOD MODE</div>
         <h1>SASP GAN Academy — Panel Admin</h1>
       </div>
       <div class="row">
         <button onclick="refreshAll()">Actualiser</button>
         <button onclick="logout()">Déconnexion</button>
       </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Agents</div><div class="value" id="statAgents">0</div></div>
+      <div class="stat"><div class="label">Certificats</div><div class="value" id="statCerts">0</div></div>
+      <div class="stat"><div class="label">Candidatures</div><div class="value" id="statApps">0</div></div>
+      <div class="stat"><div class="label">Admins</div><div class="value" id="statAdmins">0</div></div>
     </div>
 
     <div class="grid">
@@ -58,11 +79,28 @@
       </div>
 
       <div class="card">
+        <h2>Admins & rôles</h2>
+        <div class="admin-grid">
+          <input id="adminUsername" placeholder="Nom d'utilisateur admin" />
+          <select id="adminRole">
+            <option value="super_admin">Super Admin</option>
+            <option value="admin">Admin</option>
+            <option value="instructeur">Instructeur</option>
+          </select>
+        </div>
+        <div class="row">
+          <button onclick="createAdmin()">Créer un admin</button>
+        </div>
+        <div id="adminMsg" class="msg"></div>
+        <div id="admins" class="list" style="margin-top:14px"><div class="item muted">Chargement...</div></div>
+      </div>
+
+      <div class="card">
         <h2>Journal d'actions</h2>
         <div id="logs" class="list"><div class="item muted">Chargement...</div></div>
       </div>
 
-      <div class="card" style="grid-column:1 / -1">
+      <div class="card">
         <h2>Dossiers Agents</h2>
         <div id="agents" class="agent-grid"><div class="item muted">Chargement...</div></div>
       </div>
@@ -74,7 +112,48 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="agentModalBackdrop">
+    <div class="modal">
+      <div class="top">
+        <div>
+          <div class="badge">Fiche Agent</div>
+          <h2 id="agentModalTitle">Agent</h2>
+        </div>
+        <button onclick="closeAgentModal()">Fermer</button>
+      </div>
+
+      <div class="admin-grid" style="margin-top:18px">
+        <div class="card">
+          <h3>Informations</h3>
+          <div id="agentModalInfo" class="muted">Chargement...</div>
+        </div>
+        <div class="card">
+          <h3>Promouvoir / modifier grade</h3>
+          <select id="agentGradeSelect">
+            <option>Cadet</option>
+            <option>Officer</option>
+            <option>Senior Officer</option>
+            <option>Sergeant</option>
+            <option>Lieutenant</option>
+            <option>Captain</option>
+          </select>
+          <div class="row">
+            <button class="primary" onclick="updateAgentGrade()">Mettre à jour le grade</button>
+          </div>
+          <div id="agentGradeMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Historique certificats</h3>
+        <div id="agentCertificates" class="cert-list"><div class="item muted">Chargement...</div></div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    let currentAgentId = null;
+
     async function api(path, options = {}) {
       const res = await fetch(path, options);
       const data = await res.json().catch(() => ({}));
@@ -133,8 +212,6 @@
 
         pdf.href = url;
         pdf.download = 'Certificat_SASP_' + payload.name + '.pdf';
-        pdf.innerText = 'Télécharger le certificat PDF';
-
         verify.href = out.data.verifyUrl;
 
         linkBox.style.display = 'block';
@@ -146,19 +223,20 @@
         setMsg('certMsg', 'err', out.data.error || 'Erreur.');
       }
 
-      refreshLogs();
-      refreshAgents();
+      refreshAll();
     }
 
     async function refreshApplications() {
       const out = await api('/api/applications');
       if (!out) return;
       const box = document.getElementById('applications');
-      if (!out.data.ok || !Array.isArray(out.data.items) || !out.data.items.length) {
+      const items = Array.isArray(out.data.items) ? out.data.items : [];
+      document.getElementById('statApps').innerText = items.length;
+      if (!out.data.ok || !items.length) {
         box.innerHTML = '<div class="item muted">Aucune candidature enregistrée.</div>';
         return;
       }
-      box.innerHTML = out.data.items.map(item => `
+      box.innerHTML = items.map(item => `
         <div class="item">
           <strong>${item.candidateName || 'Sans nom'}</strong>
           <div class="muted">Âge RP: ${item.candidateAge || 'N/A'} • Discord: ${item.candidateDiscord || 'N/A'}</div>
@@ -189,18 +267,110 @@
       const out = await api('/api/agents');
       if (!out) return;
       const box = document.getElementById('agents');
-      if (!out.data.ok || !Array.isArray(out.data.items) || !out.data.items.length) {
+      const items = Array.isArray(out.data.items) ? out.data.items : [];
+      document.getElementById('statAgents').innerText = items.length;
+      document.getElementById('statCerts').innerText = items.reduce((acc, a) => acc + (a.certCount || 0), 0);
+      if (!out.data.ok || !items.length) {
         box.innerHTML = '<div class="item muted">Aucun agent enregistré.</div>';
         return;
       }
-      box.innerHTML = out.data.items.map(agent => `
+      box.innerHTML = items.map(agent => `
         <div class="item">
-          <strong>${agent.name}</strong>
-          <div class="muted">Grade : ${agent.grade || 'Cadet'}</div>
-          <div class="muted">${agent.certCount || 0} certificat(s)</div>
+          <div class="agent-head">
+            <strong>${agent.name}</strong>
+            <span class="pill">${agent.grade || 'Cadet'}</span>
+          </div>
+          <div class="muted" style="margin-top:8px">${agent.certCount || 0} certificat(s)</div>
           <div class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
+          <div class="row">
+            <button onclick="openAgentModal('${agent.id}')">Ouvrir le dossier</button>
+          </div>
         </div>
       `).join('');
+    }
+
+    async function refreshAdmins() {
+      const out = await api('/api/admins');
+      if (!out) return;
+      const box = document.getElementById('admins');
+      const items = Array.isArray(out.data.items) ? out.data.items : [];
+      document.getElementById('statAdmins').innerText = items.length;
+      if (!out.data.ok || !items.length) {
+        box.innerHTML = '<div class="item muted">Aucun admin enregistré.</div>';
+        return;
+      }
+      box.innerHTML = items.map(admin => `
+        <div class="item">
+          <strong>${admin.username}</strong>
+          <div class="muted">Rôle : ${admin.role}</div>
+          <div class="muted">Créé le : ${admin.createdAt ? new Date(admin.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
+        </div>
+      `).join('');
+    }
+
+    async function createAdmin() {
+      const payload = {
+        username: document.getElementById('adminUsername').value.trim(),
+        role: document.getElementById('adminRole').value
+      };
+      const out = await api('/api/admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!out) return;
+      setMsg('adminMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Admin créé.' : (out.data.error || 'Erreur.'));
+      refreshAdmins();
+      refreshLogs();
+    }
+
+    async function openAgentModal(agentId) {
+      currentAgentId = agentId;
+      document.getElementById('agentModalBackdrop').style.display = 'flex';
+      document.getElementById('agentModalInfo').innerHTML = 'Chargement...';
+      document.getElementById('agentCertificates').innerHTML = '<div class="item muted">Chargement...</div>';
+      document.getElementById('agentGradeMsg').style.display = 'none';
+
+      const out = await api('/api/agent-details?id=' + encodeURIComponent(agentId));
+      if (!out || !out.data.ok) return;
+
+      const agent = out.data.agent;
+      document.getElementById('agentModalTitle').innerText = agent.name;
+      document.getElementById('agentGradeSelect').value = agent.grade || 'Cadet';
+      document.getElementById('agentModalInfo').innerHTML =
+        '<strong>Nom :</strong> ' + agent.name + '<br>' +
+        '<strong>Grade :</strong> ' + (agent.grade || 'Cadet') + '<br>' +
+        '<strong>Certificats :</strong> ' + (agent.certCount || 0) + '<br>' +
+        '<strong>Créé le :</strong> ' + (agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A');
+
+      const certs = Array.isArray(out.data.certificates) ? out.data.certificates : [];
+      document.getElementById('agentCertificates').innerHTML = certs.length ? certs.map(cert => `
+        <div class="cert-item">
+          <strong>${cert.name || 'Sans nom'}</strong><br>
+          <span class="muted">Date : ${cert.date || 'N/A'} • Signature : ${cert.signature || 'N/A'}</span><br>
+          <span class="muted">Créé le : ${cert.createdAt ? new Date(cert.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
+        </div>
+      `).join('') : '<div class="item muted">Aucun certificat.</div>';
+    }
+
+    function closeAgentModal() {
+      document.getElementById('agentModalBackdrop').style.display = 'none';
+      currentAgentId = null;
+    }
+
+    async function updateAgentGrade() {
+      if (!currentAgentId) return;
+      const grade = document.getElementById('agentGradeSelect').value;
+      const out = await api('/api/update-agent-grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: currentAgentId, grade })
+      });
+      if (!out) return;
+      setMsg('agentGradeMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Grade mis à jour.' : (out.data.error || 'Erreur.'));
+      refreshAgents();
+      refreshLogs();
+      openAgentModal(currentAgentId);
     }
 
     async function logout() {
@@ -212,6 +382,7 @@
       refreshApplications();
       refreshLogs();
       refreshAgents();
+      refreshAdmins();
     }
 
     refreshAll();
