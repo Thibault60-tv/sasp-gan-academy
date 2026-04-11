@@ -51,9 +51,7 @@ const academyConfig = {
   certificateName: "Nom RP",
   certificateDate: "11/04/2026",
   commanderSignature: "SASP Command",
-  logoUrl: "assets/logo.png",
-  webhookUrl: "https://discord.com/api/webhooks/1492441191080263812/_FHCSup4hBu4MybXtyZVikaM_6UYsKaOog3f0LbjG6tTmvCRdJHcB0geD84GBba8RXYr",
-  certificateEditPassword: "GAN-ELITE-2026"
+  logoUrl: "assets/logo.png"
 };
 
 const eliteAlerts = ["Niveau d'alerte narcotiques : ÉLEVÉ","Cellule GAN active sur plusieurs secteurs","Surveillance renforcée sur zones sensibles"];
@@ -96,74 +94,74 @@ function initials(name){ return name.split(" ").map(p => p[0]).join("").slice(0,
 function renderList(items, renderer){ return items.map(renderer).join(""); }
 
 function updateCertificate(){
-  document.getElementById("certificateName").textContent = document.getElementById("certificateNameInput").value || "Nom RP";
-  document.getElementById("certificateDate").textContent = document.getElementById("certificateDateInput").value || "11/04/2026";
-  document.getElementById("commanderSignature").textContent = document.getElementById("certificateSignatureInput").value || "SASP Command";
+  document.getElementById("certificateName").textContent = document.getElementById("certificateNameInput").value || academyConfig.certificateName;
+  document.getElementById("certificateDate").textContent = document.getElementById("certificateDateInput").value || academyConfig.certificateDate;
+  document.getElementById("commanderSignature").textContent = document.getElementById("certificateSignatureInput").value || academyConfig.commanderSignature;
 }
 
-function unlockCertificateEditor(){
-  const input = document.getElementById("certificatePassword");
+async function unlockCertificateEditor(){
+  const password = document.getElementById("certificatePassword").value;
   const status = document.getElementById("certificateAccessStatus");
   const panel = document.getElementById("certificateEditorPanel");
-  if(input.value === academyConfig.certificateEditPassword){
+
+  status.style.display = "none";
+  const res = await fetch("/api/verify-admin", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ password })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.ok) {
     panel.style.display = "grid";
     status.className = "success";
     status.textContent = "Section certificat déverrouillée.";
     status.style.display = "block";
-    input.value = "";
+    document.getElementById("certificatePassword").value = "";
   } else {
     panel.style.display = "none";
     status.className = "error";
-    status.textContent = "Mot de passe incorrect.";
+    status.textContent = data.error || "Mot de passe incorrect.";
     status.style.display = "block";
   }
 }
 
 async function sendCertificateToDiscord(){
   const status = document.getElementById("certificateSendStatus");
-  const name = document.getElementById("certificateNameInput").value.trim() || "Nom RP";
-  const date = document.getElementById("certificateDateInput").value.trim() || "11/04/2026";
-  const signature = document.getElementById("certificateSignatureInput").value.trim() || "SASP Command";
+  const payload = {
+    name: document.getElementById("certificateNameInput").value.trim() || academyConfig.certificateName,
+    date: document.getElementById("certificateDateInput").value.trim() || academyConfig.certificateDate,
+    signature: document.getElementById("certificateSignatureInput").value.trim() || academyConfig.commanderSignature
+  };
 
-  try{
-    const response = await fetch(academyConfig.webhookUrl,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        embeds:[{
-          title:"Certificat SASP GAN généré",
-          color:15844367,
-          description:"Un certificat d'académie a été préparé depuis l'interface sécurisée ELITE MASTER.",
-          fields:[
-            {name:"Nom RP", value:name, inline:true},
-            {name:"Date", value:date, inline:true},
-            {name:"Signature", value:signature, inline:true}
-          ],
-          footer:{text:"SASP GAN Academy • Certificate Dispatch"},
-          timestamp:new Date().toISOString()
-        }]
-      })
-    });
-    if(!response.ok) throw new Error("Webhook failed");
+  const res = await fetch("/api/send-certificate", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.ok) {
     status.className = "success";
     status.textContent = "Certificat transmis sur Discord avec succès.";
-    status.style.display = "block";
-  }catch(err){
+  } else {
     status.className = "error";
-    status.textContent = "Impossible d'envoyer le certificat sur Discord.";
-    status.style.display = "block";
+    status.textContent = data.error || "Impossible d'envoyer le certificat sur Discord.";
   }
+  status.style.display = "block";
 }
 
 async function submitApplication(){
-  const candidateName = document.getElementById("candidateName").value.trim();
-  const candidateAge = document.getElementById("candidateAge").value.trim();
-  const candidateDiscord = document.getElementById("candidateDiscord").value.trim();
-  const candidateMotivation = document.getElementById("candidateMotivation").value.trim();
+  const payload = {
+    candidateName: document.getElementById("candidateName").value.trim(),
+    candidateAge: document.getElementById("candidateAge").value.trim(),
+    candidateDiscord: document.getElementById("candidateDiscord").value.trim(),
+    candidateMotivation: document.getElementById("candidateMotivation").value.trim()
+  };
+
   const statusBox = document.getElementById("submitStatus");
   const btn = document.getElementById("submitBtn");
-
-  if(!candidateName || !candidateDiscord || !candidateMotivation){
+  if(!payload.candidateName || !payload.candidateDiscord || !payload.candidateMotivation){
     statusBox.className = "error";
     statusBox.textContent = "Impossible d'envoyer la candidature. Vérifie les champs obligatoires.";
     statusBox.style.display = "block";
@@ -173,25 +171,14 @@ async function submitApplication(){
   try{
     btn.textContent = "Transmission...";
     btn.disabled = true;
-    const response = await fetch(academyConfig.webhookUrl,{
+    const res = await fetch("/api/submit-application", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        embeds:[{
-          title:"Nouvelle candidature SASP GAN",
-          color:15844367,
-          fields:[
-            {name:"Nom RP", value:candidateName || "Non renseigné", inline:true},
-            {name:"Âge RP", value:candidateAge || "Non renseigné", inline:true},
-            {name:"Discord", value:candidateDiscord || "Non renseigné", inline:true},
-            {name:"Motivation", value:candidateMotivation || "Non renseigné"}
-          ],
-          footer:{text:"SASP GAN Academy • ELITE MASTER"},
-          timestamp:new Date().toISOString()
-        }]
-      })
+      body: JSON.stringify(payload)
     });
-    if(!response.ok) throw new Error("Webhook failed");
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.ok) throw new Error(data.error || "Erreur serveur");
+
     statusBox.className = "success";
     statusBox.textContent = "Candidature transmise au commandement GAN avec succès.";
     statusBox.style.display = "block";
@@ -201,7 +188,7 @@ async function submitApplication(){
     document.getElementById("candidateMotivation").value = "";
   }catch(err){
     statusBox.className = "error";
-    statusBox.textContent = "Impossible d'envoyer la candidature. Vérifie le webhook ou réessaie.";
+    statusBox.textContent = "Impossible d'envoyer la candidature. Vérifie la configuration serveur.";
     statusBox.style.display = "block";
   }finally{
     btn.textContent = "Transmettre la candidature";
