@@ -527,4 +527,64 @@ module.exports = async (req, res) => {
   } catch (err) {
     return json(res, 500, { ok: false, error: err.message || "Erreur serveur." });
   }
+
+// Add this route into your current api/index.js from RP phase 3/5
+
+async function routeUpdateAgentFull(req, res) {
+  const payload = requireRole(req, res, ["admin"]);
+  if (!payload) return;
+  const body = await parseJson(req);
+
+  if (!body.id) return json(res, 400, { ok: false, error: "ID manquant." });
+
+  const current = await fetchRows(`agents?select=id,name,matricule,grade,division,status&id=eq.${encodeURIComponent(body.id)}&limit=1`);
+  if (!current.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
+
+  const before = current[0];
+  const patch = {
+    name: body.name || before.name,
+    matricule: body.matricule || before.matricule,
+    grade: body.grade || before.grade,
+    division: body.division || before.division,
+    status: body.status || before.status
+  };
+
+  const dbRes = await supabaseRequest(`agents?id=eq.${encodeURIComponent(body.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch)
+  });
+  const text = await dbRes.text();
+  if (!dbRes.ok) return json(res, 500, { ok: false, error: text });
+
+  if ((before.grade || "") !== (patch.grade || "")) {
+    await ensureGradeHistory(body.id, before.grade, patch.grade, body.reason || "Modification manuelle staff");
+  }
+
+  await insertLog(
+    "Agent modifié",
+    `${before.name} • ${before.grade}/${before.division}/${before.status} -> ${patch.grade}/${patch.division}/${patch.status}`
+  );
+
+  return json(res, 200, { ok: true });
+}
+
+// And in the router:
+if (action === "update_agent_full") return routeUpdateAgentFull(req, res);
+
+
+// ADD Discord embed style upgrade
+const embed = {
+  title: "🎓 Nouveau certificat",
+  color: 15844367,
+  fields: [
+    { name: "Nom", value: name },
+    { name: "Date", value: date },
+    { name: "Signature", value: signature },
+    ...(comment ? [{ name: "Commentaire", value: comment }] : []),
+    { name: "Vérification", value: verifyUrl }
+  ],
+  footer: { text: "SASP GAN Academy" }
+}
+
+
 };

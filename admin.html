@@ -3,26 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SASP GAN Academy — Phase 5 Staff Panel</title>
+  <title>SASP GAN Academy — Agent System</title>
   <style>
-    :root{
-      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;
-      --gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1540px;margin:0 auto;padding:24px}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:1540px;margin:0 auto;padding:24px} .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
     .role-admin{color:var(--red)} .role-formateur{color:var(--gold)} .role-accueil{color:var(--blue)}
-    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:22px}
-    .stat{background:#0c0c0f;border:1px solid var(--line);border-radius:18px;padding:16px}
-    .label{font-size:13px;color:var(--muted)}
-    .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
+    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:22px} .stat{background:#0c0c0f;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .label{font-size:13px;color:var(--muted)} .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
     .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;margin-top:24px}
     .card{background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
-    .list{display:grid;gap:12px}
-    .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .list{display:grid;gap:12px} .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
     .muted{color:var(--muted)}
     .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
@@ -30,12 +22,10 @@
     textarea{min-height:100px;resize:vertical}
     button,a.btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:#16171b;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .primary{background:var(--gold);color:#111;border:none}
-    .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
-    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
-    .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red)}
-    .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px}
-    .hidden{display:none !important}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none} .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)} .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red)}
+    .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px} .hidden{display:none !important} .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
     @media (max-width:1100px){.grid,.stats,.toolbar,.two-col{grid-template-columns:1fr}}
   </style>
 </head>
@@ -43,7 +33,7 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">UPGRADE RP PHASE 5</div>
+        <div class="badge">AGENT SYSTEM UPGRADE</div>
         <h1 style="margin:10px 0 6px">SASP GAN Academy — Staff Panel</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
@@ -118,8 +108,32 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="agentEditModal">
+    <div class="modal">
+      <h2>Modifier l’agent</h2>
+      <input id="editName" placeholder="Nom RP" />
+      <input id="editMatricule" placeholder="Matricule" />
+      <select id="editGrade">
+        <option>Cadet</option><option>Officer</option><option>Senior Officer</option><option>Sergeant</option><option>Lieutenant</option><option>Captain</option>
+      </select>
+      <select id="editDivision">
+        <option>GAN</option><option>Narcotics</option><option>Tactical</option><option>Command</option>
+      </select>
+      <select id="editStatus">
+        <option>Actif</option><option>En formation</option><option>Suspendu</option><option>Retiré</option>
+      </select>
+      <textarea id="editReason" placeholder="Raison / note staff"></textarea>
+      <div class="row">
+        <button class="primary" onclick="saveAgent()">Enregistrer</button>
+        <button onclick="closeAgentModal()">Fermer</button>
+      </div>
+      <div id="editMsg" class="msg"></div>
+    </div>
+  </div>
+
 <script>
 let currentUserRole = 'admin';
+let currentEditAgentId = null;
 
 function canAdmin(){ return currentUserRole === 'admin'; }
 function canTrainer(){ return currentUserRole === 'admin' || currentUserRole === 'formateur'; }
@@ -128,20 +142,15 @@ function canReception(){ return currentUserRole === 'admin' || currentUserRole =
 async function api(path, options = {}) {
   const res = await fetch(path, options);
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401) {
-    window.location.href = '/login.html';
-    return null;
-  }
+  if (res.status === 401) { window.location.href = '/login.html'; return null; }
   return { res, data };
 }
-
 function setMsg(id, cls, text){
   const el = document.getElementById(id);
   el.className = 'msg ' + cls;
   el.textContent = text;
   el.style.display = 'block';
 }
-
 async function loadSessionRole(){
   const out = await api('/api?action=session');
   if (!out || !out.data.ok) return;
@@ -151,7 +160,6 @@ async function loadSessionRole(){
   roleEl.className = currentUserRole === 'admin' ? 'role-admin' : currentUserRole === 'formateur' ? 'role-formateur' : 'role-accueil';
   document.getElementById('certificateBox').classList.toggle('hidden', !canTrainer());
 }
-
 async function runSearch(){
   const q = document.getElementById('globalSearch').value.trim();
   const box = document.getElementById('searchResults');
@@ -165,7 +173,6 @@ async function runSearch(){
     : `<div class="item"><strong>${item.certificateNumber || 'Sans numéro'}</strong><div class="muted">${item.name || 'Sans nom'}</div></div>`
   ).join('');
 }
-
 async function sendCertificate(){
   if (!canTrainer()) return;
   const payload = {
@@ -175,16 +182,13 @@ async function sendCertificate(){
     comment: document.getElementById('certComment').value.trim()
   };
   const out = await api('/api?action=create_certificate', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
   if (!out) return;
   setMsg('certMsg', out.data.ok ? 'ok' : 'err',
     out.data.ok ? `Certificat créé : ${out.data.certificateNumber || ''} • Grade ${out.data.autoGrade || ''}` : (out.data.error || 'Erreur.'));
   refreshAll();
 }
-
 async function refreshAgents(){
   if (!canTrainer()) return;
   const out = await api('/api?action=agents');
@@ -200,10 +204,44 @@ async function refreshAgents(){
       <div class="muted">Matricule : ${agent.matricule || 'N/A'}</div>
       <div class="muted">Division : ${agent.division || 'GAN'} • Statut : ${agent.status || 'Actif'}</div>
       <div class="muted">${agent.certCount || 0} certificat(s)</div>
+      ${canAdmin() ? `<div class="row"><button onclick='openAgentModal(${JSON.stringify(JSON.stringify(agent))})'>Modifier</button></div>` : ''}
     </div>
   `).join('');
 }
-
+function openAgentModal(agentJson){
+  const agent = JSON.parse(agentJson);
+  currentEditAgentId = agent.id;
+  document.getElementById('editName').value = agent.name || '';
+  document.getElementById('editMatricule').value = agent.matricule || '';
+  document.getElementById('editGrade').value = agent.grade || 'Cadet';
+  document.getElementById('editDivision').value = agent.division || 'GAN';
+  document.getElementById('editStatus').value = agent.status || 'Actif';
+  document.getElementById('editReason').value = '';
+  document.getElementById('editMsg').style.display = 'none';
+  document.getElementById('agentEditModal').style.display = 'flex';
+}
+function closeAgentModal(){
+  document.getElementById('agentEditModal').style.display = 'none';
+  currentEditAgentId = null;
+}
+async function saveAgent(){
+  if (!canAdmin() || !currentEditAgentId) return;
+  const payload = {
+    id: currentEditAgentId,
+    name: document.getElementById('editName').value.trim(),
+    matricule: document.getElementById('editMatricule').value.trim(),
+    grade: document.getElementById('editGrade').value,
+    division: document.getElementById('editDivision').value,
+    status: document.getElementById('editStatus').value,
+    reason: document.getElementById('editReason').value.trim()
+  };
+  const out = await api('/api?action=update_agent_full', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+  });
+  if (!out) return;
+  setMsg('editMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Agent mis à jour.' : (out.data.error || 'Erreur.'));
+  if (out.data.ok) { refreshAll(); }
+}
 async function refreshApplications(){
   if (!canReception()) return;
   const out = await api('/api?action=applications');
@@ -211,20 +249,13 @@ async function refreshApplications(){
   const allItems = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statApps').textContent = allItems.length;
   document.getElementById('statPending').textContent = allItems.filter(x => (x.status || 'en_attente') === 'en_attente').length;
-
   let items = [...allItems];
   const txt = document.getElementById('applicationFilterText').value.trim().toLowerCase();
   const statusFilter = document.getElementById('applicationFilterStatus').value;
   const sort = document.getElementById('applicationSort').value;
-
-  if (txt){
-    items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt));
-  }
-  if (statusFilter !== 'all'){
-    items = items.filter(x => (x.status || 'en_attente') === statusFilter);
-  }
+  if (txt){ items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt)); }
+  if (statusFilter !== 'all'){ items = items.filter(x => (x.status || 'en_attente') === statusFilter); }
   items.sort((a,b) => sort === 'oldest' ? new Date(a.createdAt) - new Date(b.createdAt) : new Date(b.createdAt) - new Date(a.createdAt));
-
   const box = document.getElementById('applications');
   if (!items.length){ box.innerHTML = '<div class="item muted">Aucune candidature.</div>'; return; }
   box.innerHTML = items.map(item => `
@@ -235,7 +266,6 @@ async function refreshApplications(){
     </div>
   `).join('');
 }
-
 async function refreshLogs(){
   if (!canAdmin()) return;
   const out = await api('/api?action=logs');
@@ -251,7 +281,6 @@ async function refreshLogs(){
     </div>
   `).join('');
 }
-
 async function refreshDashboard(){
   const out = await api('/api?action=dashboard');
   if (!out || !out.data.ok) return;
@@ -267,20 +296,8 @@ async function refreshDashboard(){
     </div>
   `).join('') : '<div class="item muted">Aucune promotion récente.</div>';
 }
-
-async function logout(){
-  await fetch('/api?action=logout', { method:'POST' });
-  window.location.href = '/login.html';
-}
-
-async function refreshAll(){
-  await loadSessionRole();
-  refreshAgents();
-  refreshApplications();
-  refreshLogs();
-  refreshDashboard();
-}
-
+async function logout(){ await fetch('/api?action=logout', { method:'POST' }); window.location.href = '/login.html'; }
+async function refreshAll(){ await loadSessionRole(); refreshAgents(); refreshApplications(); refreshLogs(); refreshDashboard(); }
 refreshAll();
 </script>
 </body>
