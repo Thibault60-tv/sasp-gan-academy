@@ -13,9 +13,32 @@ module.exports = async (req, res) => {
 
     if (!name) return res.status(400).json({ ok: false, error: "Nom manquant." });
 
+    let agentId = null;
+    const findAgentRes = await supabaseRequest(
+      `agents?select=id,name,grade,created_at&name=eq.${encodeURIComponent(name)}&limit=1`,
+      { method: "GET", headers: { Prefer: "" } }
+    );
+    const findAgentText = await findAgentRes.text();
+    if (!findAgentRes.ok) return res.status(500).json({ ok: false, error: findAgentText });
+    const foundAgents = JSON.parse(findAgentText);
+
+    if (foundAgents.length) {
+      agentId = foundAgents[0].id;
+    } else {
+      const newAgentRes = await supabaseRequest("agents", {
+        method: "POST",
+        body: JSON.stringify([{ name, grade: "Cadet", created_at: createdAt }])
+      });
+      const newAgentText = await newAgentRes.text();
+      if (!newAgentRes.ok) return res.status(500).json({ ok: false, error: newAgentText });
+      const newAgents = JSON.parse(newAgentText);
+      agentId = newAgents[0].id;
+    }
+
     const dbRes = await supabaseRequest("certificates", {
       method: "POST",
       body: JSON.stringify([{
+        agent_id: agentId,
         name,
         date: date || null,
         signature: signature || null,
@@ -43,10 +66,8 @@ module.exports = async (req, res) => {
     doc.rect(0, 0, doc.page.width, doc.page.height).fill("#0b0b0d");
     doc.fillColor("#fbbf24").fontSize(12).text("SASP GAN Academy", 40, 35, { align: "left" });
     doc.strokeColor("#fbbf24").lineWidth(1).roundedRect(30, 25, 535, 792, 16).stroke();
-
     doc.fillColor("#ffffff").fontSize(28).text("Certificat Officiel de Qualification", 40, 110, { align: "center" });
     doc.fillColor("#9ca3af").fontSize(12).text("Division Gangs & Stupéfiants • Document Officiel", 40, 150, { align: "center" });
-
     doc.roundedRect(65, 200, 465, 260, 18).strokeColor("#33343a").lineWidth(1).stroke();
     doc.fillColor("#d1d5db").fontSize(16).text("Ce document certifie que", 40, 235, { align: "center" });
     doc.fillColor("#fbbf24").fontSize(34).text(name, 40, 275, { align: "center" });
@@ -54,7 +75,6 @@ module.exports = async (req, res) => {
       "a satisfait les exigences de la SASP GAN Academy et est reconnu apte aux opérations réglementées de l'unité.",
       95, 335, { width: 405, align: "center" }
     );
-
     doc.moveTo(90, 420).lineTo(500, 420).strokeColor("#33343a").stroke();
     doc.fillColor("#e5e7eb").fontSize(13).text(`Date : ${date || "Non renseignée"}`, 95, 438);
     doc.text(`Signature : ${signature || "Non renseignée"}`, 360, 438, { width: 140, align: "right" });
