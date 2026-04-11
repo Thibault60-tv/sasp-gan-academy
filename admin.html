@@ -13,15 +13,17 @@
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:24px}
     input{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
-    button{padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;font-weight:700;cursor:pointer}
+    button,a.btn{padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .primary{background:var(--gold);color:#111;border:none}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
     .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
     .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#86efac}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+    .info{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);color:#93c5fd}
     .list{display:grid;gap:12px}
     .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
     .muted{color:var(--muted)}
+    .linkbox{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#09090b;word-break:break-all}
     @media (max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -40,14 +42,19 @@
 
     <div class="grid">
       <div class="card">
-        <h2>Envoyer un certificat</h2>
+        <h2>Envoyer un certificat PDF</h2>
         <input id="certName" placeholder="Nom RP" />
         <input id="certDate" placeholder="Date" value="11/04/2026" />
         <input id="certSignature" placeholder="Signature commandement" value="SASP Command" />
         <div class="row">
-          <button class="primary" onclick="sendCertificate()">Envoyer sur Discord</button>
+          <button class="primary" onclick="sendCertificate()">Créer PDF + Discord</button>
         </div>
         <div id="certMsg" class="msg"></div>
+        <div id="certLinkBox" class="linkbox" style="display:none"></div>
+        <div class="row" id="certActions" style="display:none">
+          <a id="pdfDownload" class="btn primary" href="#" target="_blank" rel="noreferrer">Télécharger le PDF</a>
+          <a id="verifyLink" class="btn" href="#" target="_blank" rel="noreferrer">Ouvrir la vérification</a>
+        </div>
       </div>
 
       <div class="card">
@@ -73,9 +80,9 @@
       return {res, data};
     }
 
-    function setMsg(id, ok, text) {
+    function setMsg(id, cls, text) {
       const el = document.getElementById(id);
-      el.className = 'msg ' + (ok ? 'ok' : 'err');
+      el.className = 'msg ' + cls;
       el.textContent = text;
       el.style.display = 'block';
     }
@@ -86,13 +93,27 @@
         date: document.getElementById('certDate').value.trim(),
         signature: document.getElementById('certSignature').value.trim()
       };
-      const out = await api('/api/send-certificate', {
+      const out = await api('/api/create-certificate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)
       });
       if (!out) return;
-      setMsg('certMsg', !!out.data.ok, out.data.ok ? 'Certificat envoyé.' : (out.data.error || 'Erreur.'));
+
+      if (out.data.ok) {
+        setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord.');
+        const linkBox = document.getElementById('certLinkBox');
+        const actions = document.getElementById('certActions');
+        const pdf = document.getElementById('pdfDownload');
+        const verify = document.getElementById('verifyLink');
+        pdf.href = out.data.pdfUrl;
+        verify.href = out.data.verifyUrl;
+        linkBox.style.display = 'block';
+        actions.style.display = 'flex';
+        linkBox.innerHTML = '<strong>Lien vérification :</strong><br>' + out.data.verifyUrl + '<br><br><strong>Lien PDF :</strong><br>' + out.data.pdfUrl;
+      } else {
+        setMsg('certMsg', 'err', out.data.error || 'Erreur.');
+      }
       refreshLogs();
     }
 
