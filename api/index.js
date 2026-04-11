@@ -538,6 +538,121 @@ async function routeUpdateAgentFull(req, res) {
   return json(res, 200, { ok: true });
 }
 
+
+async function routeAcceptApplicationCreateAgent(req, res) {
+  const payload = requireRole(req, res, ["admin", "accueil"]);
+  if (!payload) return;
+  const body = await parseJson(req);
+  if (!body.id) return json(res, 400, { ok: false, error: "ID manquant." });
+
+  const rows = await fetchRows(`applications?select=id,candidate_name,candidate_age,candidate_discord,candidate_motivation,status,staff_note&id=eq.${encodeURIComponent(body.id)}&limit=1`);
+  if (!rows.length) return json(res, 404, { ok: false, error: "Candidature introuvable." });
+
+  const app = rows[0];
+  const createdAt = new Date().toISOString();
+
+  let agents = await fetchRows(`agents?select=id,name,grade,matricule,division,status,created_at&name=eq.${encodeURIComponent(app.candidate_name)}&limit=1`);
+  let agentId = null;
+
+  if (agents.length) {
+    agentId = agents[0].id;
+  } else {
+    const matricule = await getNextMatricule();
+    const createRes = await supabaseRequest("agents", {
+      method: "POST",
+      body: JSON.stringify([{
+        name: app.candidate_name,
+        grade: "Cadet",
+        matricule,
+        division: "GAN",
+        status: "En formation",
+        created_at: createdAt
+      }])
+    });
+    const text = await createRes.text();
+    if (!createRes.ok) return json(res, 500, { ok: false, error: text });
+    agentId = JSON.parse(text)[0].id;
+    await insertLog("Agent créé depuis candidature", `${app.candidate_name} • ${matricule}`);
+  }
+
+  const updateRes = await supabaseRequest(`applications?id=eq.${encodeURIComponent(body.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "acceptee",
+      staff_note: body.staffNote || app.staff_note || "Candidature acceptée"
+    })
+  });
+  const updateText = await updateRes.text();
+  if (!updateRes.ok) return json(res, 500, { ok: false, error: updateText });
+
+  try {
+    await sendDiscordWebhook(applicationWebhookUrl(), {
+      embeds: [{
+        title: "Candidature acceptée",
+        color: 5763719,
+        fields: [
+          { name: "Nom RP", value: app.candidate_name || "N/A", inline: true },
+          { name: "Discord", value: app.candidate_discord || "N/A", inline: true },
+          { name: "Statut", value: "Acceptée", inline: true },
+          { name: "Agent créé", value: "Oui", inline: true },
+          { name: "Note staff", value: body.staffNote || "Candidature acceptée" }
+        ],
+        footer: { text: `SASP GAN Academy • ${getRole(payload)}` },
+        timestamp: createdAt
+      }]
+    });
+  } catch (err) {
+    await insertLog("Erreur webhook recrutement", err.message || "Erreur inconnue");
+  }
+
+  await insertLog("Candidature acceptée", `${app.candidate_name} • agent créé`);
+  return json(res, 200, { ok: true, agentId });
+}
+
+async function routeRejectApplication(req, res) {
+  const payload = requireRole(req, res, ["admin", "accueil"]);
+  if (!payload) return;
+  const body = await parseJson(req);
+  if (!body.id) return json(res, 400, { ok: false, error: "ID manquant." });
+
+  const rows = await fetchRows(`applications?select=id,candidate_name,candidate_discord,staff_note&id=eq.${encodeURIComponent(body.id)}&limit=1`);
+  if (!rows.length) return json(res, 404, { ok: false, error: "Candidature introuvable." });
+  const app = rows[0];
+  const createdAt = new Date().toISOString();
+
+  const updateRes = await supabaseRequest(`applications?id=eq.${encodeURIComponent(body.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "refusee",
+      staff_note: body.staffNote || app.staff_note || "Candidature refusée"
+    })
+  });
+  const updateText = await updateRes.text();
+  if (!updateRes.ok) return json(res, 500, { ok: false, error: updateText });
+
+  try {
+    await sendDiscordWebhook(applicationWebhookUrl(), {
+      embeds: [{
+        title: "Candidature refusée",
+        color: 15548997,
+        fields: [
+          { name: "Nom RP", value: app.candidate_name || "N/A", inline: true },
+          { name: "Discord", value: app.candidate_discord || "N/A", inline: true },
+          { name: "Statut", value: "Refusée", inline: true },
+          { name: "Motif", value: body.staffNote || "Candidature refusée" }
+        ],
+        footer: { text: `SASP GAN Academy • ${getRole(payload)}` },
+        timestamp: createdAt
+      }]
+    });
+  } catch (err) {
+    await insertLog("Erreur webhook recrutement", err.message || "Erreur inconnue");
+  }
+
+  await insertLog("Candidature refusée", `${app.candidate_name}`);
+  return json(res, 200, { ok: true });
+}
+
 module.exports = async (req, res) => {
   try {
     const url = new URL(req.url, "https://dummy");
@@ -550,6 +665,8 @@ module.exports = async (req, res) => {
     if (action === "submit_application") return routeSubmitApplication(req, res);
     if (action === "applications") return routeApplications(req, res);
     if (action === "update_application") return routeUpdateApplication(req, res);
+    if (action === "accept_application_create_agent") return routeAcceptApplicationCreateAgent(req, res);
+    if (action === "reject_application") return routeRejectApplication(req, res);
     if (action === "logs") return routeLogs(req, res);
     if (action === "admins") return routeAdmins(req, res);
     if (action === "agents") return routeAgents(req, res);
