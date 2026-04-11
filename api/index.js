@@ -188,19 +188,19 @@ async function routeAgentDetails(req, res) {
   if (!id) return json(res, 400, { ok: false, error: "ID manquant." });
   const agents = await fetchRows(`agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!agents.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
-  const certs = await fetchRows(`certificates?select=id,name,date,signature,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
-  return json(res, 200, { ok: true, agent: { id: agents[0].id, name: agents[0].name, grade: agents[0].grade, createdAt: agents[0].created_at, certCount: certs.length }, certificates: certs.map(c => ({ id: c.id, name: c.name, date: c.date, signature: c.signature, certificateNumber: c.certificate_number || "", createdAt: c.created_at }))});
+  const certs = await fetchRows(`certificates?select=id,name,date,signature,comment,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
+  return json(res, 200, { ok: true, agent: { id: agents[0].id, name: agents[0].name, grade: agents[0].grade, createdAt: agents[0].created_at, certCount: certs.length }, certificates: certs.map(c => ({ id: c.id, name: c.name, date: c.date, signature: c.signature, certificateNumber: c.certificate_number || "", comment: c.comment || "", createdAt: c.created_at }))});
 }
 async function routeCertificateDetails(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
   const id = new URL(req.url, "https://dummy").searchParams.get("id");
   if (!id) return json(res, 400, { ok: false, error: "ID manquant." });
-  const rows = await fetchRows(`certificates?select=id,name,date,signature,created_at,certificate_number&id=eq.${encodeURIComponent(id)}&limit=1`);
+  const rows = await fetchRows(`certificates?select=id,name,date,signature,comment,created_at,certificate_number&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!rows.length) return json(res, 404, { ok: false, error: "Certificat introuvable." });
   const proto = req.headers["x-forwarded-proto"] || "https";
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   const verifyUrl = `${proto}://${host}/verify.html?id=${rows[0].id}`;
-  return json(res, 200, { ok: true, certificate: { id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, certificateNumber: rows[0].certificate_number || "", verifyUrl, createdAt: rows[0].created_at }});
+  return json(res, 200, { ok: true, certificate: { id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, comment: rows[0].comment || "", certificateNumber: rows[0].certificate_number || "", verifyUrl, createdAt: rows[0].created_at }});
 }
 async function routeSearch(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
@@ -227,7 +227,7 @@ async function routeUpdateAgentGrade(req, res) {
 async function routeCreateCertificate(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
   const body = await parseJson(req);
-  const { name, date, signature } = body;
+  const { name, date, signature, comment } = body;
   if (!name) return json(res, 400, { ok: false, error: "Nom manquant." });
   const createdAt = new Date().toISOString();
   let agentRows = await fetchRows(`agents?select=id,name,grade,created_at&name=eq.${encodeURIComponent(name)}&limit=1`);
@@ -240,7 +240,7 @@ async function routeCreateCertificate(req, res) {
     agentId = JSON.parse(newAgentText)[0].id;
   }
   const certificateNumber = await getNextCertificateNumber();
-  const dbRes = await supabaseRequest("certificates", { method: "POST", body: JSON.stringify([{ agent_id: agentId, name, date: date || null, signature: signature || null, certificate_number: certificateNumber, created_at: createdAt }]) });
+  const dbRes = await supabaseRequest("certificates", { method: "POST", body: JSON.stringify([{ agent_id: agentId, name, date: date || null, signature: signature || null, comment: comment || null, certificate_number: certificateNumber, created_at: createdAt }]) });
   const dbText = await dbRes.text();
   if (!dbRes.ok) return json(res, 500, { ok: false, error: dbText });
   const cert = JSON.parse(dbText)[0];
@@ -266,6 +266,11 @@ async function routeCreateCertificate(req, res) {
   doc.moveTo(90, 425).lineTo(500, 425).strokeColor("#33343a").stroke();
   doc.fillColor("#e5e7eb").fontSize(13).text(`Date : ${date || "Non renseignée"}`, 95, 442);
   doc.text(`Signature : ${signature || "Non renseignée"}`, 360, 442, { width: 140, align: "right" });
+  if (comment) {
+    doc.roundedRect(85, 470, 420, 55, 12).strokeColor("#33343a").lineWidth(1).stroke();
+    doc.fillColor("#9ca3af").fontSize(11).text("Commentaire", 105, 482);
+    doc.fillColor("#ffffff").fontSize(12).text(comment, 105, 500, { width: 380, align: "center" });
+  }
   doc.image(Buffer.from(qrDataUrl.split(",")[1], "base64"), 225, 520, { fit: [140, 140] });
   doc.fillColor("#9ca3af").fontSize(10).text("Scanner pour vérifier l'authenticité", 40, 675, { align: "center" });
   doc.fillColor("#9ca3af").fontSize(9).text(verifyUrl, 70, 695, { width: 460, align: "center" });
@@ -278,9 +283,9 @@ async function routeCreateCertificate(req, res) {
 async function routeVerify(req, res) {
   const id = new URL(req.url, "https://dummy").searchParams.get("id");
   if (!id) return json(res, 400, { valid: false });
-  const rows = await fetchRows(`certificates?select=id,name,date,signature,created_at,certificate_number&id=eq.${encodeURIComponent(id)}&limit=1`);
+  const rows = await fetchRows(`certificates?select=id,name,date,signature,comment,created_at,certificate_number&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!rows.length) return json(res, 200, { valid: false });
-  return json(res, 200, { valid: true, id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, certificateNumber: rows[0].certificate_number || "", createdAt: rows[0].created_at });
+  return json(res, 200, { valid: true, id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, comment: rows[0].comment || "", certificateNumber: rows[0].certificate_number || "", createdAt: rows[0].created_at });
 }
 
 
