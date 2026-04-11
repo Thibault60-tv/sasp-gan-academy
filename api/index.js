@@ -283,6 +283,28 @@ async function routeVerify(req, res) {
   return json(res, 200, { valid: true, id: rows[0].id, name: rows[0].name, date: rows[0].date, signature: rows[0].signature, certificateNumber: rows[0].certificate_number || "", createdAt: rows[0].created_at });
 }
 
+
+async function routeDashboard(req, res) {
+  const payload = requireRole(req, res, ["admin", "formateur", "accueil"]);
+  if (!payload) return;
+
+  const certs = await fetchRows("certificates?select=id,name,certificate_number,created_at&order=created_at.desc&limit=20");
+  const today = new Date().toISOString().slice(0,10);
+  const todayCertificates = certs.filter(c => (c.created_at || "").slice(0,10) === today).length;
+
+  return json(res, 200, {
+    ok: true,
+    todayCertificates,
+    latestCertificates: certs.slice(0,5).map(c => ({
+      id: c.id,
+      name: c.name,
+      certificateNumber: c.certificate_number || "",
+      createdAt: c.created_at
+    }))
+  });
+}
+
+
 module.exports = async (req, res) => {
   try {
     const url = new URL(req.url, "https://dummy");
@@ -303,6 +325,7 @@ module.exports = async (req, res) => {
     if (action === "update_agent_grade") return routeUpdateAgentGrade(req, res);
     if (action === "create_certificate") return routeCreateCertificate(req, res);
     if (action === "verify") return routeVerify(req, res);
+    if (action === "dashboard") return routeDashboard(req, res);
     return json(res, 404, { ok: false, error: "Action inconnue." });
   } catch (err) {
     return json(res, 500, { ok: false, error: err.message || "Erreur serveur." });
