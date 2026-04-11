@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SASP GAN Admin Login</title>
+  <style>
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#111114,#09090b);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .card{width:min(420px,92vw);background:#111113;border:1px solid #27272a;border-radius:24px;padding:28px;box-shadow:0 20px 40px rgba(0,0,0,.25)}
+    h1{margin:0 0 8px;font-size:32px}
+    p{color:#a1a1aa;line-height:1.6}
+    input{width:100%;box-sizing:border-box;margin-top:14px;padding:15px 16px;border-radius:16px;border:1px solid #27272a;background:#09090b;color:#fff}
+    button{width:100%;margin-top:16px;padding:15px 16px;border:none;border-radius:16px;background:#fbbf24;color:#111;font-weight:800;cursor:pointer}
+    .msg{margin-top:14px;padding:12px 14px;border-radius:14px;display:none}
+    .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Connexion Admin</h1>
+    <p>Espace privé ELITE MASTER. Connecte-toi pour gérer les certificats et les candidatures.</p>
+    <input id="username" placeholder="Identifiant admin" />
+    <input id="password" type="password" placeholder="Mot de passe" />
+    <button onclick="login()">Se connecter</button>
+    <div id="msg" class="msg err"></div>
+  </div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const msg = document.getElementById('msg');
+      msg.style.display = 'none';
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({username, password})
+      });
+      const data = await res.json().catch(()=>({}));
+      if (res.ok && data.ok) {
+        window.location.href = '/admin.html';
+      } else {
+        msg.textContent = data.error || 'Connexion impossible.';
+        msg.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

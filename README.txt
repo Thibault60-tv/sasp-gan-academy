@@ -1,33 +1,49 @@
-SASP GAN Academy - Vercel secure version
+SASP GAN Academy - Vercel PRO ADMIN
 
 Contenu:
-- index.html
-- api/verify-admin.js
+- index.html (redirige vers login)
+- login.html
+- admin.html
+- api/_auth.js
+- api/login.js
+- api/logout.js
 - api/submit-application.js
 - api/send-certificate.js
+- api/applications.js
+- api/logs.js
 - .env.example
 
-Ce que cette version sécurise:
-- Le webhook Discord n'est plus dans le HTML.
-- Le mot de passe admin n'est plus dans le HTML.
-- Le déverrouillage admin passe par /api/verify-admin.
-- L'envoi du certificat vers Discord exige un cookie HttpOnly signé côté serveur.
+Fonctions:
+- Connexion admin avec identifiant + mot de passe
+- Session via cookie HttpOnly signé
+- Panel admin séparé
+- Envoi certificat vers Discord depuis le panel
+- Candidatures consultables côté admin
+- Journal d'actions consultable côté admin
+- Webhook Discord caché côté serveur
 
 Déploiement Vercel:
-1. Crée un repo GitHub et envoie tout le contenu.
+1. Mets tous les fichiers dans un repo GitHub.
 2. Importe le repo dans Vercel.
-3. Dans Vercel > Settings > Environment Variables, ajoute:
-   - DISCORD_WEBHOOK_URL = ton webhook Discord
-   - CERTIFICATE_PASSWORD = ton mot de passe admin
-   - ADMIN_TOKEN_SECRET = une longue clé aléatoire
-4. Redeploy.
+3. Dans Settings > Environment Variables ajoute:
+   - DISCORD_WEBHOOK_URL
+   - ADMIN_USERNAME
+   - ADMIN_PASSWORD
+   - ADMIN_TOKEN_SECRET
 
-Notes:
-- index.html suppose que ton logo est dans assets/logo.png
-- Les candidatures partent vers /api/submit-application
-- Le certificat admin se déverrouille via /api/verify-admin
-- L'envoi du certificat part via /api/send-certificate
+Exemple:
+DISCORD_WEBHOOK_URL=ton_webhook
+ADMIN_USERNAME=admin_sasp
+ADMIN_PASSWORD=mot_de_passe_tres_solide
+ADMIN_TOKEN_SECRET=cle_aleatoire_longue_et_unique
 
-Conseil:
-- Mets un vrai lien Discord dans academyConfig.discordUrl
-- Garde ton repo privé si possible
+Notes importantes:
+- Les tableaux candidatures/logs ici utilisent la mémoire runtime. Sur Vercel serverless, ils peuvent se réinitialiser entre déploiements ou réveils.
+- Pour un stockage durable, branche ensuite une base comme Upstash Redis, Neon, Supabase ou Postgres.
+- Le logo est attendu dans assets/logo.png
+
+Étape suivante possible:
+- version avec base de données persistante
+- comptes multi-admin
+- rôles instructeur / commandement
+- suppression / validation des candidatures
