@@ -48,31 +48,6 @@ function getRole(payload) {
   return (payload && payload.role) || "admin";
 }
 
-function requireSession(req, res) {
-  const secret = process.env.ADMIN_TOKEN_SECRET;
-  if (!secret) {
-    json(res, 500, { ok: false, error: "ADMIN_TOKEN_SECRET manquant." });
-    return null;
-  }
-  const token = parseCookies(req.headers.cookie || "").gan_admin_token;
-  const payload = verifyToken(token, secret);
-  if (!payload) {
-    json(res, 401, { ok: false, error: "Accès refusé." });
-    return null;
-  }
-  return payload;
-}
-
-function requireRole(req, res, allowed) {
-  const payload = requireSession(req, res);
-  if (!payload) return null;
-  if (!allowed.includes(getRole(payload))) {
-    json(res, 403, { ok: false, error: "Permissions insuffisantes." });
-    return null;
-  }
-  return payload;
-}
-
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -106,6 +81,46 @@ async function insertLog(action, details) {
     method: "POST",
     body: JSON.stringify([{ action, details, created_at: new Date().toISOString() }])
   });
+}
+
+function requireSession(req, res) {
+  const secret = process.env.ADMIN_TOKEN_SECRET;
+  if (!secret) {
+    json(res, 500, { ok: false, error: "ADMIN_TOKEN_SECRET manquant." });
+    return null;
+  }
+  const token = parseCookies(req.headers.cookie || "").gan_admin_token;
+  const payload = verifyToken(token, secret);
+  if (!payload) {
+    json(res, 401, { ok: false, error: "Accès refusé." });
+    return null;
+  }
+  return payload;
+}
+
+function requireRole(req, res, allowedRoles) {
+  const payload = requireSession(req, res);
+  if (!payload) return null;
+  const role = getRole(payload);
+  if (!allowedRoles.includes(role)) {
+    json(res, 403, { ok: false, error: "Permissions insuffisantes." });
+    return null;
+  }
+  return payload;
+}
+
+async function getNextCertificateNumber() {
+  const year = new Date().getFullYear();
+  const rows = await fetchRows(
+    `certificates?select=certificate_number&certificate_number=like.GAN-${year}-*&order=created_at.desc&limit=200`
+  );
+  let maxSeq = 0;
+  for (const row of rows) {
+    const val = row.certificate_number || "";
+    const m = val.match(new RegExp(`^GAN-${year}-(\\d{4})$`));
+    if (m) maxSeq = Math.max(maxSeq, parseInt(m[1], 10));
+  }
+  return `GAN-${year}-${String(maxSeq + 1).padStart(4, "0")}`;
 }
 
 async function routeLogin(req, res) {
@@ -160,6 +175,8 @@ async function routeSubmitApplication(req, res) {
       candidate_age: candidateAge || null,
       candidate_discord: candidateDiscord,
       candidate_motivation: candidateMotivation,
+      status: "en_attente",
+      staff_note: null,
       created_at: createdAt
     }])
   });
@@ -180,6 +197,7 @@ async function routeSubmitApplication(req, res) {
             { name: "Nom RP", value: candidateName, inline: true },
             { name: "Âge RP", value: candidateAge || "Non renseigné", inline: true },
             { name: "Discord", value: candidateDiscord, inline: true },
+            { name: "Statut", value: "en_attente", inline: true },
             { name: "Motivation", value: candidateMotivation }
           ],
           footer: { text: "SASP GAN Academy • Recrutement" },
@@ -195,15 +213,38 @@ async function routeSubmitApplication(req, res) {
 async function routeApplications(req, res) {
   const payload = requireRole(req, res, ["admin", "accueil"]);
   if (!payload) return;
-  const rows = await fetchRows("applications?select=id,candidate_name,candidate_age,candidate_discord,candidate_motivation,created_at&order=created_at.desc&limit=50");
+  const rows = await fetchRows("applications?select=id,candidate_name,candidate_age,candidate_discord,candidate_motivation,status,staff_note,created_at&order=created_at.desc&limit=100");
   return json(res, 200, { ok: true, items: rows.map(r => ({
     id: r.id,
     candidateName: r.candidate_name,
     candidateAge: r.candidate_age,
     candidateDiscord: r.candidate_discord,
     candidateMotivation: r.candidate_motivation,
+    status: r.status || "en_attente",
+    staffNote: r.staff_note || "",
     createdAt: r.created_at
   }))});
+}
+
+async function routeUpdateApplication(req, res) {
+  const payload = requireRole(req, res, ["admin", "accueil"]);
+  if (!payload) return;
+  const body = await parseJson(req);
+  if (!body.id) return json(res, 400, { ok: false, error: "ID manquant." });
+
+  const patch = {};
+  if (body.status) patch.status = body.status;
+  if (typeof body.staffNote === "string") patch.staff_note = body.staffNote;
+
+  const dbRes = await supabaseRequest(`applications?id=eq.${encodeURIComponent(body.id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch)
+  });
+  const text = await dbRes.text();
+  if (!dbRes.ok) return json(res, 500, { ok: false, error: text });
+
+  await insertLog("Candidature mise à jour", `${body.id} • ${body.status || "note modifiée"}`);
+  return json(res, 200, { ok: true });
 }
 
 async function routeLogs(req, res) {
@@ -265,7 +306,7 @@ async function routeAgentDetails(req, res) {
   if (!id) return json(res, 400, { ok: false, error: "ID manquant." });
   const agents = await fetchRows(`agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!agents.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
-  const certs = await fetchRows(`certificates?select=id,name,date,signature,created_at,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
+  const certs = await fetchRows(`certificates?select=id,name,date,signature,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
   return json(res, 200, {
     ok: true,
     agent: {
@@ -276,7 +317,7 @@ async function routeAgentDetails(req, res) {
       certCount: certs.length
     },
     certificates: certs.map(c => ({
-      id: c.id, name: c.name, date: c.date, signature: c.signature, createdAt: c.created_at
+      id: c.id, name: c.name, date: c.date, signature: c.signature, certificateNumber: c.certificate_number || "", createdAt: c.created_at
     }))
   });
 }
@@ -319,9 +360,18 @@ async function routeCreateCertificate(req, res) {
     agentId = JSON.parse(newAgentText)[0].id;
   }
 
+  const certificateNumber = await getNextCertificateNumber();
+
   const dbRes = await supabaseRequest("certificates", {
     method: "POST",
-    body: JSON.stringify([{ agent_id: agentId, name, date: date || null, signature: signature || null, created_at: createdAt }])
+    body: JSON.stringify([{
+      agent_id: agentId,
+      name,
+      date: date || null,
+      signature: signature || null,
+      certificate_number: certificateNumber,
+      created_at: createdAt
+    }])
   });
   const dbText = await dbRes.text();
   if (!dbRes.ok) return json(res, 500, { ok: false, error: dbText });
@@ -342,13 +392,14 @@ async function routeCreateCertificate(req, res) {
   doc.strokeColor("#fbbf24").lineWidth(1).roundedRect(30, 25, 535, 792, 16).stroke();
   doc.fillColor("#ffffff").fontSize(28).text("Certificat Officiel de Qualification", 40, 110, { align: "center" });
   doc.fillColor("#9ca3af").fontSize(12).text("Division Gangs & Stupéfiants • Document Officiel", 40, 150, { align: "center" });
-  doc.roundedRect(65, 200, 465, 260, 18).strokeColor("#33343a").lineWidth(1).stroke();
-  doc.fillColor("#d1d5db").fontSize(16).text("Ce document certifie que", 40, 235, { align: "center" });
-  doc.fillColor("#fbbf24").fontSize(34).text(name, 40, 275, { align: "center" });
-  doc.fillColor("#d1d5db").fontSize(15).text("a satisfait les exigences de la SASP GAN Academy et est reconnu apte aux opérations réglementées de l'unité.", 95, 335, { width: 405, align: "center" });
-  doc.moveTo(90, 420).lineTo(500, 420).strokeColor("#33343a").stroke();
-  doc.fillColor("#e5e7eb").fontSize(13).text(`Date : ${date || "Non renseignée"}`, 95, 438);
-  doc.text(`Signature : ${signature || "Non renseignée"}`, 360, 438, { width: 140, align: "right" });
+  doc.fillColor("#9ca3af").fontSize(11).text(`Référence : ${certificateNumber}`, 40, 170, { align: "center" });
+  doc.roundedRect(65, 210, 465, 250, 18).strokeColor("#33343a").lineWidth(1).stroke();
+  doc.fillColor("#d1d5db").fontSize(16).text("Ce document certifie que", 40, 245, { align: "center" });
+  doc.fillColor("#fbbf24").fontSize(34).text(name, 40, 285, { align: "center" });
+  doc.fillColor("#d1d5db").fontSize(15).text("a satisfait les exigences de la SASP GAN Academy et est reconnu apte aux opérations réglementées de l'unité.", 95, 345, { width: 405, align: "center" });
+  doc.moveTo(90, 425).lineTo(500, 425).strokeColor("#33343a").stroke();
+  doc.fillColor("#e5e7eb").fontSize(13).text(`Date : ${date || "Non renseignée"}`, 95, 442);
+  doc.text(`Signature : ${signature || "Non renseignée"}`, 360, 442, { width: 140, align: "right" });
   const qrBase64 = qrDataUrl.split(",")[1];
   doc.image(Buffer.from(qrBase64, "base64"), 225, 520, { fit: [140, 140] });
   doc.fillColor("#9ca3af").fontSize(10).text("Scanner pour vérifier l'authenticité", 40, 675, { align: "center" });
@@ -368,6 +419,7 @@ async function routeCreateCertificate(req, res) {
           description: "Certificat PDF visuel généré depuis le panel staff.",
           fields: [
             { name: "Nom RP", value: name, inline: true },
+            { name: "Référence", value: certificateNumber, inline: true },
             { name: "Date", value: date || "Non renseignée", inline: true },
             { name: "Signature", value: signature || "Non renseignée", inline: true },
             { name: "Vérification", value: verifyUrl }
@@ -379,14 +431,14 @@ async function routeCreateCertificate(req, res) {
     });
   }
 
-  await insertLog("Certificat PDF envoyé", `${name} • ${date || "Sans date"} • ${getRole(payload)}`);
-  return json(res, 200, { ok: true, verifyUrl, pdfUrl });
+  await insertLog("Certificat PDF envoyé", `${certificateNumber} • ${name} • ${getRole(payload)}`);
+  return json(res, 200, { ok: true, verifyUrl, pdfUrl, certificateNumber });
 }
 
 async function routeVerify(req, res) {
   const id = new URL(req.url, "https://dummy").searchParams.get("id");
   if (!id) return json(res, 400, { valid: false });
-  const rows = await fetchRows(`certificates?select=id,name,date,signature,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
+  const rows = await fetchRows(`certificates?select=id,name,date,signature,created_at,certificate_number&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!rows.length) return json(res, 200, { valid: false });
   return json(res, 200, {
     valid: true,
@@ -394,6 +446,7 @@ async function routeVerify(req, res) {
     name: rows[0].name,
     date: rows[0].date,
     signature: rows[0].signature,
+    certificateNumber: rows[0].certificate_number || "",
     createdAt: rows[0].created_at
   });
 }
@@ -409,6 +462,7 @@ module.exports = async (req, res) => {
     if (action === "session") return routeSession(req, res);
     if (action === "submit_application") return routeSubmitApplication(req, res);
     if (action === "applications") return routeApplications(req, res);
+    if (action === "update_application") return routeUpdateApplication(req, res);
     if (action === "logs") return routeLogs(req, res);
     if (action === "admins") return routeAdmins(req, res);
     if (action === "agents") return routeAgents(req, res);
