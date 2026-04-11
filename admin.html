@@ -10,14 +10,16 @@
       --red:#f87171;--blue:#93c5fd;--green:#86efac;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top, rgba(251,191,36,.08), transparent 25%), linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1450px;margin:0 auto;padding:24px}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+      radial-gradient(circle at top, rgba(251,191,36,.10), transparent 22%),
+      linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:1480px;margin:0 auto;padding:24px}
     .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
     .role-admin{color:var(--red)} .role-formateur{color:var(--gold)} .role-accueil{color:var(--blue)}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
-    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 12px 34px rgba(0,0,0,.18)}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:22px}
     .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:16px}
     .stat .label{font-size:13px;color:var(--muted)}
     .stat .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
@@ -45,20 +47,20 @@
     .search-wrap{position:relative}
     .suggestions{position:absolute;top:100%;left:0;right:0;background:#0b0b0d;border:1px solid var(--line);border-radius:16px;margin-top:8px;overflow:hidden;z-index:30;display:none}
     .suggestion{padding:12px 14px;border-top:1px solid #1d1e22;cursor:pointer}
-    .suggestion:first-child{border-top:none}
-    .suggestion:hover{background:#15161a}
+    .suggestion:first-child{border-top:none}.suggestion:hover{background:#15161a}
     .status{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:.14em}
     .status-en_attente{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d}
     .status-acceptee{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
     .status-refusee{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
-    @media (max-width:1100px){.grid,.admin-grid,.agent-grid,.stats{grid-template-columns:1fr}}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    @media (max-width:1100px){.grid,.admin-grid,.agent-grid,.stats,.two-col{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">PHASE 2 RECHERCHE PRO</div>
+        <div class="badge">PHASE 3 PREMIUM</div>
         <h1>SASP GAN Academy — Panel Admin</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
@@ -73,6 +75,7 @@
       <div class="stat"><div class="label">Certificats</div><div class="value" id="statCerts">0</div></div>
       <div class="stat"><div class="label">Candidatures</div><div class="value" id="statApps">0</div></div>
       <div class="stat"><div class="label">En attente</div><div class="value" id="statPending">0</div></div>
+      <div class="stat"><div class="label">Aujourd'hui</div><div class="value" id="statTodayCerts">0</div></div>
     </div>
 
     <div class="grid">
@@ -91,13 +94,26 @@
         <input id="certDate" placeholder="Date" value="11/04/2026" />
         <input id="certSignature" placeholder="Signature commandement" value="SASP Command" />
         <div class="row">
-          <button class="primary" onclick="sendCertificate()">Créer PDF + Discord</button>
+          <button class="primary" onclick="sendCertificate()">Créer PDF Premium + Discord</button>
         </div>
         <div id="certMsg" class="msg"></div>
         <div id="certLinkBox" class="linkbox" style="display:none"></div>
         <div class="row" id="certActions" style="display:none">
           <a id="pdfDownload" class="btn primary" href="#" target="_blank" rel="noreferrer">Télécharger le PDF</a>
           <a id="verifyLink" class="btn" href="#" target="_blank" rel="noreferrer">Ouvrir la vérification</a>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:1 / -1">
+        <div class="two-col">
+          <div>
+            <h2>Derniers certificats</h2>
+            <div id="latestCertificates" class="list"><div class="item muted">Chargement...</div></div>
+          </div>
+          <div>
+            <h2>Promotions récentes</h2>
+            <div id="latestPromotions" class="list"><div class="item muted">Chargement...</div></div>
+          </div>
         </div>
       </div>
 
@@ -132,18 +148,6 @@
       <div class="card" id="sectionApplications" style="grid-column:1 / -1">
         <h2>Candidatures reçues</h2>
         <div id="applications" class="list"><div class="item muted">Chargement...</div></div>
-      </div>
-
-      <div class="card hidden" id="sectionAccueilForm" style="grid-column:1 / -1">
-        <h2>Déposer une candidature</h2>
-        <input id="candidateName" placeholder="Nom RP" />
-        <input id="candidateAge" placeholder="Âge RP" />
-        <input id="candidateDiscord" placeholder="Identifiant Discord" />
-        <textarea id="candidateMotivation" placeholder="Motivation, expérience RP, disponibilités"></textarea>
-        <div class="row">
-          <button class="primary" onclick="submitCandidateFromAdmin()">Déposer la candidature</button>
-        </div>
-        <div id="candidateMsg" class="msg"></div>
       </div>
     </div>
   </div>
@@ -190,14 +194,7 @@
   <script>
     let currentAgentId = null;
     let currentUserRole = 'admin';
-
-    function roleLabelCls(role) {
-      if (role === 'admin') return 'role-admin';
-      if (role === 'formateur') return 'role-formateur';
-      if (role === 'accueil') return 'role-accueil';
-      return '';
-    }
-
+    function roleLabelCls(role) { return role === 'admin' ? 'role-admin' : role === 'formateur' ? 'role-formateur' : role === 'accueil' ? 'role-accueil' : ''; }
     function canAdmin() { return currentUserRole === 'admin'; }
     function canTrainer() { return currentUserRole === 'admin' || currentUserRole === 'formateur'; }
     function canReception() { return currentUserRole === 'admin' || currentUserRole === 'accueil'; }
@@ -211,7 +208,6 @@
       document.getElementById('sectionCertificates').classList.toggle('hidden', !canTrainer());
       document.getElementById('sectionAgents').classList.toggle('hidden', !canTrainer());
       document.getElementById('sectionApplications').classList.toggle('hidden', !canReception());
-      document.getElementById('sectionAccueilForm').classList.toggle('hidden', currentUserRole !== 'accueil');
       document.getElementById('agentGradeCard').classList.toggle('hidden', !canAdmin());
     }
 
@@ -254,31 +250,17 @@
     async function runSearch() {
       const q = document.getElementById('globalSearch').value.trim();
       const box = document.getElementById('searchSuggestions');
-      if (q.length < 2) {
-        box.style.display = 'none';
-        box.innerHTML = '';
-        return;
-      }
+      if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
       const out = await api('/api?action=search&q=' + encodeURIComponent(q));
-      if (!out || !out.data.ok) {
-        box.style.display = 'none';
-        return;
-      }
+      if (!out || !out.data.ok) { box.style.display = 'none'; return; }
       const items = out.data.items || [];
-      if (!items.length) {
-        box.style.display = 'block';
-        box.innerHTML = '<div class="suggestion muted">Aucun résultat</div>';
-        return;
-      }
-      box.innerHTML = items.map(item => {
-        if (item.type === 'agent') {
-          return `<div class="suggestion" onclick="openAgentModal('${item.id}'); hideSuggestions();"><strong>${item.name}</strong><br><span class="muted">Agent • ${item.grade || 'Cadet'}</span></div>`;
-        }
-        return `<div class="suggestion" onclick="openCertificateBySearch('${item.id}'); hideSuggestions();"><strong>${item.certificateNumber || 'Sans numéro'}</strong><br><span class="muted">${item.name || 'Sans nom'}</span></div>`;
-      }).join('');
+      if (!items.length) { box.style.display = 'block'; box.innerHTML = '<div class="suggestion muted">Aucun résultat</div>'; return; }
+      box.innerHTML = items.map(item => item.type === 'agent'
+        ? `<div class="suggestion" onclick="openAgentModal('${item.id}'); hideSuggestions();"><strong>${item.name}</strong><br><span class="muted">Agent • ${item.grade || 'Cadet'}</span></div>`
+        : `<div class="suggestion" onclick="openCertificateBySearch('${item.id}'); hideSuggestions();"><strong>${item.certificateNumber || 'Sans numéro'}</strong><br><span class="muted">${item.name || 'Sans nom'}</span></div>`
+      ).join('');
       box.style.display = 'block';
     }
-
     function hideSuggestions() {
       const box = document.getElementById('searchSuggestions');
       box.style.display = 'none';
@@ -290,9 +272,7 @@
       if (!out || !out.data.ok) return;
       const cert = out.data.certificate;
       setMsg('searchMsg', 'ok', 'Certificat trouvé : ' + (cert.certificateNumber || '') + ' • ' + (cert.name || ''));
-      if (cert.verifyUrl) {
-        document.getElementById('verifyLink').href = cert.verifyUrl;
-      }
+      if (cert.verifyUrl) document.getElementById('verifyLink').href = cert.verifyUrl;
     }
 
     async function sendCertificate() {
@@ -308,9 +288,8 @@
         body: JSON.stringify(payload)
       });
       if (!out) return;
-
       if (out.data.ok) {
-        setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord. Réf: ' + (out.data.certificateNumber || ''));
+        setMsg('certMsg', 'ok', 'Certificat PDF premium créé. Réf: ' + (out.data.certificateNumber || ''));
         const linkBox = document.getElementById('certLinkBox');
         const actions = document.getElementById('certActions');
         const pdf = document.getElementById('pdfDownload');
@@ -323,39 +302,11 @@
         verify.href = out.data.verifyUrl;
         linkBox.style.display = 'block';
         actions.style.display = 'flex';
-        linkBox.innerHTML =
-          '<strong>Référence :</strong> ' + (out.data.certificateNumber || '') +
-          '<br><strong>Lien vérification :</strong><br>' + out.data.verifyUrl +
-          '<br><br><strong>PDF prêt au téléchargement.</strong>';
+        linkBox.innerHTML = '<strong>Référence :</strong> ' + (out.data.certificateNumber || '') + '<br><strong>Lien vérification :</strong><br>' + out.data.verifyUrl;
       } else {
         setMsg('certMsg', 'err', out.data.error || 'Erreur.');
       }
       refreshAll();
-    }
-
-    async function submitCandidateFromAdmin() {
-      if (!canReception()) return;
-      const payload = {
-        candidateName: document.getElementById('candidateName').value.trim(),
-        candidateAge: document.getElementById('candidateAge').value.trim(),
-        candidateDiscord: document.getElementById('candidateDiscord').value.trim(),
-        candidateMotivation: document.getElementById('candidateMotivation').value.trim()
-      };
-      const out = await api('/api?action=submit_application', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!out) return;
-      setMsg('candidateMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Candidature déposée.' : (out.data.error || 'Erreur.'));
-      if (out.data.ok) {
-        document.getElementById('candidateName').value = '';
-        document.getElementById('candidateAge').value = '';
-        document.getElementById('candidateDiscord').value = '';
-        document.getElementById('candidateMotivation').value = '';
-      }
-      refreshApplications();
-      if (canAdmin()) refreshLogs();
     }
 
     async function saveApplication(id) {
@@ -379,10 +330,7 @@
       const items = Array.isArray(out.data.items) ? out.data.items : [];
       document.getElementById('statApps').innerText = items.length;
       document.getElementById('statPending').innerText = items.filter(x => (x.status || 'en_attente') === 'en_attente').length;
-      if (!out.data.ok || !items.length) {
-        box.innerHTML = '<div class="item muted">Aucune candidature enregistrée.</div>';
-        return;
-      }
+      if (!out.data.ok || !items.length) { box.innerHTML = '<div class="item muted">Aucune candidature enregistrée.</div>'; return; }
       box.innerHTML = items.map(item => `
         <div class="item">
           <div class="agent-head">
@@ -397,9 +345,7 @@
             <option value="refusee" ${(item.status || '') === 'refusee' ? 'selected' : ''}>Refusée</option>
           </select>
           <textarea id="note_${item.id}" placeholder="Note interne staff">${item.staffNote || ''}</textarea>
-          <div class="row">
-            <button onclick="saveApplication(${item.id})">Enregistrer</button>
-          </div>
+          <div class="row"><button onclick="saveApplication(${item.id})">Enregistrer</button></div>
           <div class="muted" style="margin-top:8px">${new Date(item.createdAt).toLocaleString('fr-FR')}</div>
         </div>
       `).join('');
@@ -410,17 +356,10 @@
       const out = await api('/api?action=logs');
       if (!out) return;
       const box = document.getElementById('logs');
-      if (!out.data.ok || !Array.isArray(out.data.items) || !out.data.items.length) {
-        box.innerHTML = '<div class="item muted">Aucune action enregistrée.</div>';
-        return;
-      }
-      box.innerHTML = out.data.items.map(item => `
-        <div class="item">
-          <strong>${item.action}</strong>
-          <div class="muted">${item.details || ''}</div>
-          <div class="muted" style="margin-top:8px">${new Date(item.createdAt).toLocaleString('fr-FR')}</div>
-        </div>
-      `).join('');
+      if (!out.data.ok || !Array.isArray(out.data.items) || !out.data.items.length) { box.innerHTML = '<div class="item muted">Aucune action enregistrée.</div>'; return; }
+      box.innerHTML = out.data.items.map(item => `<div class="item"><strong>${item.action}</strong><div class="muted">${item.details || ''}</div><div class="muted" style="margin-top:8px">${new Date(item.createdAt).toLocaleString('fr-FR')}</div></div>`).join('');
+      const promos = out.data.items.filter(x => (x.action || '').toLowerCase().includes('grade')).slice(0,5);
+      document.getElementById('latestPromotions').innerHTML = promos.length ? promos.map(item => `<div class="item"><strong>${item.action}</strong><div class="muted">${item.details || ''}</div></div>`).join('') : '<div class="item muted">Aucune promotion récente.</div>';
     }
 
     async function refreshAgents() {
@@ -431,10 +370,7 @@
       const items = Array.isArray(out.data.items) ? out.data.items : [];
       document.getElementById('statAgents').innerText = items.length;
       document.getElementById('statCerts').innerText = items.reduce((acc, a) => acc + (a.certCount || 0), 0);
-      if (!out.data.ok || !items.length) {
-        box.innerHTML = '<div class="item muted">Aucun agent enregistré.</div>';
-        return;
-      }
+      if (!out.data.ok || !items.length) { box.innerHTML = '<div class="item muted">Aucun agent enregistré.</div>'; return; }
       box.innerHTML = items.map(agent => `
         <div class="item">
           <div class="agent-head">
@@ -443,11 +379,19 @@
           </div>
           <div class="muted" style="margin-top:8px">${agent.certCount || 0} certificat(s)</div>
           <div class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
-          <div class="row">
-            <button onclick="openAgentModal('${agent.id}')">Ouvrir le dossier</button>
-          </div>
+          <div class="row"><button onclick="openAgentModal('${agent.id}')">Ouvrir le dossier</button></div>
         </div>
       `).join('');
+    }
+
+    async function refreshDashboard() {
+      const out = await api('/api?action=dashboard');
+      if (!out || !out.data.ok) return;
+      document.getElementById('statTodayCerts').innerText = out.data.todayCertificates || 0;
+      const latest = out.data.latestCertificates || [];
+      document.getElementById('latestCertificates').innerHTML = latest.length
+        ? latest.map(item => `<div class="item"><strong>${item.certificateNumber || ''}</strong><div class="muted">${item.name || ''}</div><div class="muted">${item.createdAt ? new Date(item.createdAt).toLocaleString('fr-FR') : ''}</div></div>`).join('')
+        : '<div class="item muted">Aucun certificat récent.</div>';
     }
 
     async function refreshAdmins() {
@@ -456,17 +400,8 @@
       if (!out) return;
       const box = document.getElementById('admins');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
-      if (!out.data.ok || !items.length) {
-        box.innerHTML = '<div class="item muted">Aucun admin enregistré.</div>';
-        return;
-      }
-      box.innerHTML = items.map(admin => `
-        <div class="item">
-          <strong>${admin.username}</strong>
-          <div class="muted">Rôle : ${admin.role}</div>
-          <div class="muted">Créé le : ${admin.createdAt ? new Date(admin.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
-        </div>
-      `).join('');
+      if (!out.data.ok || !items.length) { box.innerHTML = '<div class="item muted">Aucun admin enregistré.</div>'; return; }
+      box.innerHTML = items.map(admin => `<div class="item"><strong>${admin.username}</strong><div class="muted">Rôle : ${admin.role}</div><div class="muted">Créé le : ${admin.createdAt ? new Date(admin.createdAt).toLocaleString('fr-FR') : 'N/A'}</div></div>`).join('');
     }
 
     async function createAdmin() {
@@ -494,10 +429,8 @@
       document.getElementById('agentModalInfo').innerHTML = 'Chargement...';
       document.getElementById('agentCertificates').innerHTML = '<div class="item muted">Chargement...</div>';
       document.getElementById('agentGradeMsg').style.display = 'none';
-
       const out = await api('/api?action=agent_details&id=' + encodeURIComponent(agentId));
       if (!out || !out.data.ok) return;
-
       const agent = out.data.agent;
       document.getElementById('agentModalTitle').innerText = agent.name;
       document.getElementById('agentGradeSelect').value = agent.grade || 'Cadet';
@@ -506,7 +439,6 @@
         '<strong>Grade :</strong> ' + (agent.grade || 'Cadet') + '<br>' +
         '<strong>Certificats :</strong> ' + (agent.certCount || 0) + '<br>' +
         '<strong>Créé le :</strong> ' + (agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A');
-
       const certs = Array.isArray(out.data.certificates) ? out.data.certificates : [];
       document.getElementById('agentCertificates').innerHTML = certs.length ? certs.map(cert => `
         <div class="cert-item">
@@ -534,6 +466,7 @@
       setMsg('agentGradeMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Grade mis à jour.' : (out.data.error || 'Erreur.'));
       refreshAgents();
       refreshLogs();
+      refreshDashboard();
       openAgentModal(currentAgentId);
     }
 
@@ -548,6 +481,7 @@
       refreshLogs();
       refreshAgents();
       refreshAdmins();
+      refreshDashboard();
     }
 
     document.addEventListener('click', (e) => {

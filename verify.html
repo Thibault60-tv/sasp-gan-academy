@@ -31,6 +31,7 @@
         if (d.valid) {
           box.className = 'valid';
           box.innerHTML = '<strong>Certificat VALIDE</strong><br><br>' +
+            'Référence : ' + (d.certificateNumber || 'N/A') + '<br>' +
             'Nom RP : ' + (d.name || 'N/A') + '<br>' +
             'Date : ' + (d.date || 'N/A') + '<br>' +
             'Signature : ' + (d.signature || 'N/A') + '<br>' +
