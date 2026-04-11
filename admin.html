@@ -34,7 +34,7 @@
     .agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .agent-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
     .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
-    .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .admin-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .hidden{display:none !important}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
     .modal{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
@@ -82,9 +82,10 @@
       </div>
 
       <div class="card" id="sectionAdmins">
-        <h2>Admins & rôles</h2>
+        <h2>Comptes & rôles</h2>
         <div class="admin-grid">
-          <input id="adminUsername" placeholder="Nom d'utilisateur admin" />
+          <input id="adminUsername" placeholder="Nom d'utilisateur staff" />
+          <input id="adminPassword" placeholder="Mot de passe (optionnel)" />
           <select id="adminRole">
             <option value="admin">Admin</option>
             <option value="formateur">Formateur</option>
@@ -176,13 +177,12 @@
 
     function applyRoleUI() {
       document.getElementById('currentRole').innerText = currentUserRole;
-
       document.getElementById('sectionAdmins').classList.toggle('hidden', !canAdmin());
       document.getElementById('sectionLogs').classList.toggle('hidden', !canAdmin());
       document.getElementById('sectionCertificates').classList.toggle('hidden', !canTrainer());
       document.getElementById('sectionAgents').classList.toggle('hidden', !canTrainer());
       document.getElementById('sectionApplications').classList.toggle('hidden', !canReception());
-      document.getElementById('sectionAccueilForm').classList.toggle('hidden', !canReception());
+      document.getElementById('sectionAccueilForm').classList.toggle('hidden', currentUserRole !== 'accueil');
       document.getElementById('agentGradeCard').classList.toggle('hidden', !canAdmin());
     }
 
@@ -216,7 +216,7 @@
     }
 
     async function loadSessionRole() {
-      const out = await api('/api/session');
+      const out = await api('/api?action=session');
       if (!out || !out.data.ok) return;
       currentUserRole = out.data.role || 'admin';
       applyRoleUI();
@@ -229,7 +229,7 @@
         date: document.getElementById('certDate').value.trim(),
         signature: document.getElementById('certSignature').value.trim()
       };
-      const out = await api('/api/create-certificate', {
+      const out = await api('/api?action=create_certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -267,7 +267,7 @@
         candidateDiscord: document.getElementById('candidateDiscord').value.trim(),
         candidateMotivation: document.getElementById('candidateMotivation').value.trim()
       };
-      const out = await api('/api/submit-application', {
+      const out = await api('/api?action=submit_application', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -281,12 +281,12 @@
         document.getElementById('candidateMotivation').value = '';
       }
       refreshApplications();
-      refreshLogs();
+      if (canAdmin()) refreshLogs();
     }
 
     async function refreshApplications() {
       if (!canReception()) return;
-      const out = await api('/api/applications');
+      const out = await api('/api?action=applications');
       if (!out) return;
       const box = document.getElementById('applications');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
@@ -307,7 +307,7 @@
 
     async function refreshLogs() {
       if (!canAdmin()) return;
-      const out = await api('/api/logs');
+      const out = await api('/api?action=logs');
       if (!out) return;
       const box = document.getElementById('logs');
       if (!out.data.ok || !Array.isArray(out.data.items) || !out.data.items.length) {
@@ -325,7 +325,7 @@
 
     async function refreshAgents() {
       if (!canTrainer()) return;
-      const out = await api('/api/agents');
+      const out = await api('/api?action=agents');
       if (!out) return;
       const box = document.getElementById('agents');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
@@ -352,7 +352,7 @@
 
     async function refreshAdmins() {
       if (!canAdmin()) return;
-      const out = await api('/api/admins');
+      const out = await api('/api?action=admins');
       if (!out) return;
       const box = document.getElementById('admins');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
@@ -374,15 +374,16 @@
       if (!canAdmin()) return;
       const payload = {
         username: document.getElementById('adminUsername').value.trim(),
+        password: document.getElementById('adminPassword').value.trim(),
         role: document.getElementById('adminRole').value
       };
-      const out = await api('/api/admins', {
+      const out = await api('/api?action=admins', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       if (!out) return;
-      setMsg('adminMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Compte créé.' : (out.data.error || 'Erreur.'));
+      setMsg('adminMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? ('Compte créé. Mot de passe: ' + (out.data.defaultPassword || 'ChangeMe123!')) : (out.data.error || 'Erreur.'));
       refreshAdmins();
       refreshLogs();
     }
@@ -395,7 +396,7 @@
       document.getElementById('agentCertificates').innerHTML = '<div class="item muted">Chargement...</div>';
       document.getElementById('agentGradeMsg').style.display = 'none';
 
-      const out = await api('/api/agent-details?id=' + encodeURIComponent(agentId));
+      const out = await api('/api?action=agent_details&id=' + encodeURIComponent(agentId));
       if (!out || !out.data.ok) return;
 
       const agent = out.data.agent;
@@ -425,7 +426,7 @@
     async function updateAgentGrade() {
       if (!canAdmin() || !currentAgentId) return;
       const grade = document.getElementById('agentGradeSelect').value;
-      const out = await api('/api/update-agent-grade', {
+      const out = await api('/api?action=update_agent_grade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId: currentAgentId, grade })
@@ -438,7 +439,7 @@
     }
 
     async function logout() {
-      await fetch('/api/logout', { method: 'POST' });
+      await fetch('/api?action=logout', { method: 'POST' });
       window.location.href = '/login.html';
     }
 

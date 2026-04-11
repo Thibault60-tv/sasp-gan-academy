@@ -5,93 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SASP GAN Academy</title>
   <style>
-    :root{
-      --bg:#0a0a0b;--panel:#111214;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;
-    }
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1200px;margin:0 auto;padding:32px 24px}
-    .hero{padding:60px 0;border-bottom:1px solid var(--line)}
-    .pill{display:inline-flex;padding:8px 14px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);border-radius:999px;color:#fcd34d;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
-    h1{font-size:58px;line-height:1.05;margin:18px 0 0}
+    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top,rgba(251,191,36,.08),transparent 25%),linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto;padding:28px}
+    .hero{padding:48px 0}
+    .pill{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+    h1{font-size:56px;line-height:1.05;margin:18px 0 0}
     .lead{max-width:760px;color:var(--muted);font-size:18px;line-height:1.7;margin-top:18px}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start;margin-top:28px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:24px}
-    .actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:18px;border:1px solid var(--line);background:#15161a;color:#fff;text-decoration:none;font-weight:700;cursor:pointer}
-    .btn.primary{background:var(--gold);color:#111;border:none}
-    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-    .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:18px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px}
+    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;text-decoration:none;font-weight:700;cursor:pointer}
+    .primary{background:var(--gold);color:#111;border:none}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:16px}
     .label{font-size:13px;color:var(--muted)}
-    .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
-    .section{padding:56px 0}
-    .section h2{font-size:34px;margin:0 0 20px}
-    .modules,.ops{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-    .module,.op{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:22px}
-    .tag{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
+    .value{margin-top:8px;font-size:26px;color:var(--gold);font-weight:800}
+    .section{padding:28px 0}
+    .mods{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .mod{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:22px;padding:18px}
+    .tag{display:inline-flex;padding:6px 10px;border-radius:999px;border:1px solid rgba(251,191,36,.18);background:rgba(251,191,36,.08);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.14em}
     .muted{color:var(--muted);line-height:1.7}
     .form input,.form textarea{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
-    .form textarea{min-height:140px;resize:vertical}
-    .msg{margin-top:14px;padding:12px 14px;border-radius:16px;display:none}
+    .form textarea{min-height:130px;resize:vertical}
+    .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
     .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#86efac}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
-    @media (max-width:900px){.grid,.modules,.ops{grid-template-columns:1fr} h1{font-size:40px}}
+    @media (max-width:900px){.grid,.mods{grid-template-columns:1fr} h1{font-size:40px}}
   </style>
 </head>
 <body>
   <div class="wrap hero">
-    <div class="pill">SASP • GTA RP • GAN</div>
+    <div class="pill">SASP • GAN • GTA RP</div>
     <h1>SASP GAN Academy</h1>
-    <div class="lead">Académie Gang & Narcotics pensée pour un serveur GTA RP sérieux. Recrutement, formation, certificats et espace admin sécurisé.</div>
-
+    <div class="lead">Académie complète Gang & Narcotics avec panel admin, rôles, certificats PDF, vérification, dossiers agents et dépôt de candidatures.</div>
     <div class="grid">
       <div class="card">
-        <h2 style="margin-top:0">Rejoindre l’unité</h2>
-        <div class="muted">Dépose ta candidature pour intégrer la division Gangs & Stupéfiants. Les candidatures sont transmises au commandement via webhook Discord et stockées en base.</div>
+        <h2 style="margin-top:0">Recrutement</h2>
+        <div class="muted">Dépose une candidature pour rejoindre l’unité. Les candidatures partent sur Discord et sont stockées en base.</div>
         <div class="actions">
           <a class="btn primary" href="#candidature">Déposer une candidature</a>
-          <a class="btn" href="/login.html">Connexion admin</a>
+          <a class="btn" href="/login.html">Connexion staff</a>
         </div>
       </div>
       <div class="card">
         <div class="stats">
-          <div class="stat"><div class="label">Unité</div><div class="value">GAN</div></div>
-          <div class="stat"><div class="label">Style</div><div class="value">GTA RP</div></div>
-          <div class="stat"><div class="label">Accès admin</div><div class="value">Sécurisé</div></div>
-          <div class="stat"><div class="label">Certificats</div><div class="value">Discord</div></div>
+          <div class="stat"><div class="label">Rôles</div><div class="value">3</div></div>
+          <div class="stat"><div class="label">PDF</div><div class="value">Oui</div></div>
+          <div class="stat"><div class="label">Vérification</div><div class="value">QR</div></div>
+          <div class="stat"><div class="label">Architecture</div><div class="value">1 API</div></div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="wrap section">
-    <h2>Parcours de formation</h2>
-    <div class="modules">
-      <div class="module"><div class="tag">Niveau 1</div><h3>Formation de base</h3><div class="muted">Procédures, discipline, communication radio et immersion RP.</div></div>
-      <div class="module"><div class="tag">Niveau 2</div><h3>Enquêtes narcotiques</h3><div class="muted">Surveillance, collecte de preuves, informateurs et montage de dossier.</div></div>
-      <div class="module"><div class="tag">Niveau 3</div><h3>Intervention tactique</h3><div class="muted">Entrées à risque, sécurisation, arrestations et rapports post-opération.</div></div>
-    </div>
-  </div>
-
-  <div class="wrap section">
-    <h2>Dossiers opérationnels</h2>
-    <div class="ops">
-      <div class="op"><div class="tag">Raid</div><h3>Black Tide</h3><div class="muted">Neutralisation d’un laboratoire clandestin avec saisie de stupéfiants.</div></div>
-      <div class="op"><div class="tag">Surveillance</div><h3>Ghost Wire</h3><div class="muted">Suivi longue durée et démantèlement d’une chaîne logistique narcotique.</div></div>
-      <div class="op"><div class="tag">High Risk</div><h3>Iron Seal</h3><div class="muted">Entrée à haut risque et sécurisation complète d’un point de deal armé.</div></div>
+    <h2>Parcours</h2>
+    <div class="mods">
+      <div class="mod"><div class="tag">Base</div><h3>Formation RP</h3><div class="muted">Procédures, discipline, radio, posture et immersion police.</div></div>
+      <div class="mod"><div class="tag">Enquête</div><h3>Narcotics</h3><div class="muted">Surveillance, preuves, informateurs, dossiers et exploitation terrain.</div></div>
+      <div class="mod"><div class="tag">Tactique</div><h3>Intervention</h3><div class="muted">Entrées à risque, sécurisation, arrestations et commandement.</div></div>
     </div>
   </div>
 
   <div class="wrap section" id="candidature">
     <div class="card form">
       <h2 style="margin-top:0">Déposer une candidature</h2>
-      <div class="muted">Les champs nom RP, Discord et motivation sont obligatoires.</div>
       <input id="candidateName" placeholder="Nom RP" />
       <input id="candidateAge" placeholder="Âge RP" />
       <input id="candidateDiscord" placeholder="Identifiant Discord" />
       <textarea id="candidateMotivation" placeholder="Motivation, expérience RP, disponibilités"></textarea>
       <div class="actions">
         <button class="btn primary" id="submitBtn" onclick="submitApplication()">Transmettre la candidature</button>
-        <a class="btn" href="/login.html">Espace admin</a>
+        <a class="btn" href="/login.html">Panel staff</a>
       </div>
       <div id="submitStatus" class="msg"></div>
     </div>
@@ -116,9 +102,9 @@
       }
 
       try {
-        btn.textContent = 'Transmission...';
         btn.disabled = true;
-        const res = await fetch('/api/submit-application', {
+        btn.textContent = 'Transmission...';
+        const res = await fetch('/api?action=submit_application', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify(payload)
@@ -137,8 +123,8 @@
         box.textContent = 'Impossible de transmettre la candidature.';
         box.style.display = 'block';
       } finally {
-        btn.textContent = 'Transmettre la candidature';
         btn.disabled = false;
+        btn.textContent = 'Transmettre la candidature';
       }
     }
   </script>

@@ -1,37 +1,36 @@
-SASP GAN Academy - 
+SASP GAN Academy - Rebuild total propre
 
-Stack:
-- Front HTML simple
-- API Vercel serverless
-- Supabase pour stockage persistant
-- Webhook Discord côté serveur
+Cette version refait tout en mieux avec UNE seule fonction Vercel.
+Elle contourne la limite Hobby sur le nombre de fonctions.
+
+Rôles:
+- admin: accès complet
+- formateur: certificats + agents
+- accueil: candidatures + dépôt
 
 Fichiers:
 - index.html
 - login.html
 - admin.html
-- api/_auth.js
-- api/login.js
-- api/logout.js
-- api/submit-application.js
-- api/send-certificate.js
-- api/applications.js
-- api/logs.js
+- verify.html
+- api/index.js
+- package.json
 - supabase_schema.sql
 - .env.example
 
 Installation:
-1. Exécuter supabase_schema.sql dans Supabase SQL Editor
-2. Mettre tous les fichiers dans GitHub
-3. Importer le repo dans Vercel
-4. Ajouter les variables d'environnement de .env.example
-5. Redeploy
+1. Sauvegarder l'ancien projet si besoin
+2. Remplacer tout par ce pack
+3. Dans Vercel, supprimer les anciens fichiers /api si tu gardes un repo mélangé
+4. Garder uniquement api/index.js côté API
+5. Exécuter supabase_schema.sql dans Supabase
+6. Vérifier les variables Vercel
+7. Redeploy
 
-Cette version est pensée pour:
-- GTA RP
-- un seul admin pour l’instant
-- plusieurs comptes possibles plus tard
-- certificats envoyés sur Discord
+Connexion:
+- compte principal via ADMIN_USERNAME / ADMIN_PASSWORD
+- comptes staff via le panel admin
 
-
-Serveur Fivem  Shetland RP
+Conseil:
+- après import, fais un redeploy propre
+- puis reconnecte-toi

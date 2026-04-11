@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connexion Admin — SASP GAN Academy</title>
+  <title>Connexion — SASP GAN Academy</title>
   <style>
     body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh}
     .card{width:min(430px,92vw);background:#111113;border:1px solid #25262b;border-radius:26px;padding:28px}
@@ -16,19 +16,18 @@
 </head>
 <body>
   <div class="card">
-    <h1>Connexion Admin</h1>
-    <p>Espace privé de gestion des candidatures et certificats.</p>
-    <input id="username" placeholder="Identifiant admin" />
+    <h1>Connexion staff</h1>
+    <p>Admin, Formateur ou Accueil.</p>
+    <input id="username" placeholder="Identifiant" />
     <input id="password" type="password" placeholder="Mot de passe" />
     <button onclick="login()">Se connecter</button>
     <div id="msg" class="msg"></div>
   </div>
-
   <script>
     async function login() {
       const msg = document.getElementById('msg');
       msg.style.display = 'none';
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api?action=login', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
