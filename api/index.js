@@ -278,8 +278,8 @@ async function routeCreateCertificate(req, res) {
   await pdfReady;
   const pdfUrl = `data:application/pdf;base64,${Buffer.concat(chunks).toString("base64")}`;
 
-  if (process.env.DISCORD_WEBHOOK_URL) {
-    await fetch(process.env.DISCORD_WEBHOOK_URL, {
+  if (process.env.DISCORD_WEBHOOK_CERT) {
+    await fetch(process.env.DISCORD_WEBHOOK_CERT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
