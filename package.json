@@ -1,9 +1,6 @@
 {
   "dependencies": {
-<<<<<<< HEAD
     "pdfkit": "^0.15.0",
-=======
->>>>>>> c0dea882c5bdeb46142e469f5f147eef20b3e838
     "qrcode": "^1.5.4"
   }
 }
