@@ -1,0 +1,15 @@
+
+<!-- ADD badge visual -->
+<div id="badge"></div>
+<script>
+function renderBadge(data){
+  document.getElementById('badge').innerHTML = `
+    <div style="border:1px solid #333;padding:15px;border-radius:12px">
+      <h2>Carte Officielle</h2>
+      <p>${data.name}</p>
+      <p>${data.date}</p>
+      <p>${data.signature}</p>
+    </div>
+  `;
+}
+</script>
