@@ -120,6 +120,21 @@ function gradeFromCount(count) {
   if (count >= 2) return "Officer";
   return "Cadet";
 }
+
+async function ensureGradeHistory(agentId, fromGrade, toGrade, reason) {
+  const createdAt = new Date().toISOString();
+  await supabaseRequest("grade_history", {
+    method: "POST",
+    body: JSON.stringify([{
+      agent_id: agentId,
+      from_grade: fromGrade || null,
+      to_grade: toGrade || null,
+      reason: reason || "Promotion automatique",
+      created_at: createdAt
+    }])
+  });
+}
+
 function mentionFromCount(count) {
   if (count >= 12) return "Élément d'élite";
   if (count >= 6) return "Excellence";
@@ -241,6 +256,7 @@ async function routeAgentDetails(req, res) {
   const agents = await fetchRows(`agents?select=id,name,grade,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!agents.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
   const certs = await fetchRows(`certificates?select=id,name,date,signature,comment,mention,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
+  const promotions = await fetchRows(`grade_history?select=id,from_grade,to_grade,reason,created_at&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
   return json(res, 200, {
     ok: true,
     agent: {
@@ -250,6 +266,7 @@ async function routeAgentDetails(req, res) {
       createdAt: agents[0].created_at,
       certCount: certs.length
     },
+    promotions: promotions.map(p => ({ id: p.id, fromGrade: p.from_grade, toGrade: p.to_grade, reason: p.reason, createdAt: p.created_at })),
     certificates: certs.map(c => ({
       id: c.id, name: c.name, date: c.date, signature: c.signature, comment: c.comment || "",
       mention: c.mention || "", certificateNumber: c.certificate_number || "", createdAt: c.created_at
@@ -287,10 +304,13 @@ async function routeUpdateAgentGrade(req, res) {
   const payload = requireRole(req, res, ["admin"]); if (!payload) return;
   const body = await parseJson(req);
   if (!body.agentId || !body.grade) return json(res, 400, { ok: false, error: "Données manquantes." });
+  const existing = await fetchRows(`agents?select=id,grade,name&id=eq.${encodeURIComponent(body.agentId)}&limit=1`);
+  const previousGrade = existing.length ? (existing[0].grade || "Cadet") : "Cadet";
   const dbRes = await supabaseRequest(`agents?id=eq.${encodeURIComponent(body.agentId)}`, { method: "PATCH", body: JSON.stringify({ grade: body.grade }) });
   const text = await dbRes.text();
   if (!dbRes.ok) return json(res, 500, { ok: false, error: text });
-  await insertLog("Grade mis à jour", `${body.agentId} • ${body.grade}`);
+  await ensureGradeHistory(body.agentId, previousGrade, body.grade, "Modification manuelle staff");
+  await insertLog("Grade mis à jour", `${body.agentId} • ${previousGrade} -> ${body.grade}`);
   return json(res, 200, { ok: true });
 }
 async function routeCreateCertificate(req, res) {
@@ -324,12 +344,18 @@ async function routeCreateCertificate(req, res) {
   const mention = mentionFromCount(nextCount);
   const certificateNumber = await getNextCertificateNumber();
 
+  const previousGrade = agentRows.length ? (agentRows[0].grade || "Cadet") : "Cadet";
   const gradeUpdateRes = await supabaseRequest(`agents?id=eq.${encodeURIComponent(agentId)}`, {
     method: "PATCH",
     body: JSON.stringify({ grade: autoGrade })
   });
   const gradeUpdateText = await gradeUpdateRes.text();
   if (!gradeUpdateRes.ok) return json(res, 500, { ok: false, error: gradeUpdateText });
+
+  if (previousGrade !== autoGrade) {
+    await ensureGradeHistory(agentId, previousGrade, autoGrade, `Promotion automatique après ${nextCount} certificat(s)`);
+    await insertLog("Promotion automatique", `${name} • ${previousGrade} -> ${autoGrade}`);
+  }
 
   const dbRes = await supabaseRequest("certificates", {
     method: "POST",
@@ -435,6 +461,7 @@ async function routeVerify(req, res) {
 async function routeDashboard(req, res) {
   const payload = requireRole(req, res, ["admin", "formateur", "accueil"]); if (!payload) return;
   const certs = await fetchRows("certificates?select=id,name,certificate_number,mention,created_at&order=created_at.desc&limit=20");
+  const promotions = await fetchRows("grade_history?select=id,from_grade,to_grade,reason,created_at&order=created_at.desc&limit=10");
   const today = new Date().toISOString().slice(0, 10);
   const todayCertificates = certs.filter(c => (c.created_at || "").slice(0, 10) === today).length;
   return json(res, 200, {
@@ -446,6 +473,13 @@ async function routeDashboard(req, res) {
       mention: c.mention || "",
       certificateNumber: c.certificate_number || "",
       createdAt: c.created_at
+    })),
+    latestPromotions: promotions.slice(0, 5).map(p => ({
+      id: p.id,
+      fromGrade: p.from_grade,
+      toGrade: p.to_grade,
+      reason: p.reason,
+      createdAt: p.created_at
     }))
   });
 }

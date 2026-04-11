@@ -144,7 +144,6 @@
         <input id="certName" placeholder="Nom RP" />
         <input id="certDate" placeholder="Date" value="11/04/2026" />
         <input id="certSignature" placeholder="Signature commandement" value="SASP Command" />
-        <textarea id="certComment" placeholder="Commentaire (optionnel) — ex: Félicitations pour la réussite de la formation"></textarea>
         <div class="row">
           <button class="primary" onclick="sendCertificate()">Créer PDF Premium + Discord</button>
         </div>
@@ -253,6 +252,11 @@
         <h3>Historique certificats</h3>
         <div id="agentCertificates" class="cert-list"><div class="item muted">Chargement...</div></div>
       </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Historique promotions</h3>
+        <div id="agentPromotions" class="cert-list"><div class="item muted">Chargement...</div></div>
+      </div>
     </div>
   </div>
 
@@ -347,8 +351,7 @@
       const payload = {
         name: document.getElementById('certName').value.trim(),
         date: document.getElementById('certDate').value.trim(),
-        signature: document.getElementById('certSignature').value.trim(),
-        comment: document.getElementById('certComment').value.trim()
+        signature: document.getElementById('certSignature').value.trim()
       };
       const out = await api('/api?action=create_certificate', {
         method: 'POST',
@@ -524,6 +527,7 @@
       document.getElementById('agentModalBackdrop').style.display = 'flex';
       document.getElementById('agentModalInfo').innerHTML = 'Chargement...';
       document.getElementById('agentCertificates').innerHTML = '<div class="item muted">Chargement...</div>';
+      document.getElementById('agentPromotions').innerHTML = '<div class="item muted">Chargement...</div>';
       document.getElementById('agentGradeMsg').style.display = 'none';
       const out = await api('/api?action=agent_details&id=' + encodeURIComponent(agentId));
       if (!out || !out.data.ok) return;
@@ -536,13 +540,24 @@
         '<strong>Certificats :</strong> ' + (agent.certCount || 0) + '<br>' +
         '<strong>Créé le :</strong> ' + (agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A');
       const certs = Array.isArray(out.data.certificates) ? out.data.certificates : [];
+      const promotions = Array.isArray(out.data.promotions) ? out.data.promotions : [];
       document.getElementById('agentCertificates').innerHTML = certs.length ? certs.map(cert => `
         <div class="cert-item">
           <strong>${cert.certificateNumber || 'Sans numéro'}</strong><br>
           <span class="muted">${cert.name || 'Sans nom'} • Date : ${cert.date || 'N/A'} • Signature : ${cert.signature || 'N/A'}</span><br>
-          <span class="muted">Créé le : ${cert.createdAt ? new Date(cert.createdAt).toLocaleString('fr-FR') : 'N/A'}</span><br>${cert.comment ? `<span class="muted">Commentaire : ${cert.comment}</span>` : ''}
+          ${cert.mention ? `<span class="pill" style="margin-top:8px">${cert.mention}</span><br>` : ''}
+          <span class="muted">Créé le : ${cert.createdAt ? new Date(cert.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
         </div>
       `).join('') : '<div class="item muted">Aucun certificat.</div>';
+
+      document.getElementById('agentPromotions').innerHTML = promotions.length ? promotions.map(item => `
+        <div class="cert-item">
+          <strong>${item.toGrade || 'Grade'}</strong><br>
+          <span class="muted">Depuis : ${item.fromGrade || 'N/A'}</span><br>
+          <span class="muted">${item.reason || 'Promotion automatique'}</span><br>
+          <span class="muted">${item.createdAt ? new Date(item.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
+        </div>
+      `).join('') : '<div class="item muted">Aucune promotion enregistrée.</div>';
     }
 
     function closeAgentModal() {
