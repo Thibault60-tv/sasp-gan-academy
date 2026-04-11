@@ -86,7 +86,7 @@
         date: document.getElementById('certDate').value.trim(),
         signature: document.getElementById('certSignature').value.trim()
       };
-      const out = await api('/api/send-certificate', {
+      const out = await api('/api/create-certificate', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)
