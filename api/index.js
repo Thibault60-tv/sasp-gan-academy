@@ -277,6 +277,31 @@ async function routeCreateCertificate(req, res) {
   doc.end();
   await pdfReady;
   const pdfUrl = `data:application/pdf;base64,${Buffer.concat(chunks).toString("base64")}`;
+
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    await fetch(process.env.DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [{
+          title: "Certificat SASP GAN généré",
+          color: 15844367,
+          description: "Certificat PDF premium généré depuis le panel staff.",
+          fields: [
+            { name: "Référence", value: certificateNumber || "N/A", inline: true },
+            { name: "Nom RP", value: name || "N/A", inline: true },
+            { name: "Date", value: date || "Non renseignée", inline: true },
+            { name: "Signature", value: signature || "Non renseignée", inline: true },
+            ...(comment ? [{ name: "Commentaire", value: comment }] : []),
+            { name: "Vérification", value: verifyUrl }
+          ],
+          footer: { text: `SASP GAN Academy • ${getRole(payload)}` },
+          timestamp: createdAt
+        }]
+      })
+    });
+  }
+
   await insertLog("Certificat PDF envoyé", `${certificateNumber} • ${name} • ${getRole(payload)}`);
   return json(res, 200, { ok: true, verifyUrl, pdfUrl, certificateNumber });
 }
