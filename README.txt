@@ -1,7 +1,9 @@
-SASP GAN Academy - Vercel PRO ADMIN
+SASP GAN Academy - Vercel PRO ADMIN + Supabase
+
+Ce pack ajoute un stockage persistant via Supabase.
 
 Contenu:
-- index.html (redirige vers login)
+- index.html
 - login.html
 - admin.html
 - api/_auth.js
@@ -11,39 +13,42 @@ Contenu:
 - api/send-certificate.js
 - api/applications.js
 - api/logs.js
+- supabase_schema.sql
 - .env.example
+- README.txt
 
-Fonctions:
-- Connexion admin avec identifiant + mot de passe
-- Session via cookie HttpOnly signé
-- Panel admin séparé
-- Envoi certificat vers Discord depuis le panel
-- Candidatures consultables côté admin
-- Journal d'actions consultable côté admin
+Ce que cette version apporte:
+- Connexion admin avec session signée
 - Webhook Discord caché côté serveur
+- Candidatures persistantes en base
+- Journal d'actions persistant
+- Panel admin privé
+- Certificats envoyés depuis le panel
 
-Déploiement Vercel:
-1. Mets tous les fichiers dans un repo GitHub.
-2. Importe le repo dans Vercel.
-3. Dans Settings > Environment Variables ajoute:
+Déploiement:
+1. Crée un projet Supabase.
+2. Ouvre SQL Editor et exécute le contenu de supabase_schema.sql
+3. Crée un repo GitHub avec ce pack.
+4. Importe le repo dans Vercel.
+5. Dans Vercel > Settings > Environment Variables ajoute:
    - DISCORD_WEBHOOK_URL
    - ADMIN_USERNAME
    - ADMIN_PASSWORD
    - ADMIN_TOKEN_SECRET
+   - SUPABASE_URL
+   - SUPABASE_SERVICE_ROLE_KEY
 
-Exemple:
-DISCORD_WEBHOOK_URL=ton_webhook
-ADMIN_USERNAME=admin_sasp
-ADMIN_PASSWORD=mot_de_passe_tres_solide
-ADMIN_TOKEN_SECRET=cle_aleatoire_longue_et_unique
+Variables:
+- SUPABASE_URL = URL du projet Supabase
+- SUPABASE_SERVICE_ROLE_KEY = clé service role (à garder secrète)
 
-Notes importantes:
-- Les tableaux candidatures/logs ici utilisent la mémoire runtime. Sur Vercel serverless, ils peuvent se réinitialiser entre déploiements ou réveils.
-- Pour un stockage durable, branche ensuite une base comme Upstash Redis, Neon, Supabase ou Postgres.
-- Le logo est attendu dans assets/logo.png
+Important:
+- Ne mets jamais la SERVICE ROLE KEY dans le front.
+- Garde les appels Supabase uniquement dans /api.
 
 Étape suivante possible:
-- version avec base de données persistante
+- validation/refus de candidature
+- suppression d'entrées
 - comptes multi-admin
-- rôles instructeur / commandement
-- suppression / validation des candidatures
+- rôles instructeur/commandement
+- upload de fichiers ou certificats PDF
