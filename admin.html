@@ -287,23 +287,61 @@ async function refreshApplications(){
   const allItems = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statApps').textContent = allItems.length;
   document.getElementById('statPending').textContent = allItems.filter(x => (x.status || 'en_attente') === 'en_attente').length;
+
   let items = [...allItems];
   const txt = document.getElementById('applicationFilterText').value.trim().toLowerCase();
   const statusFilter = document.getElementById('applicationFilterStatus').value;
   const sort = document.getElementById('applicationSort').value;
-  if (txt){ items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt)); }
-  if (statusFilter !== 'all'){ items = items.filter(x => (x.status || 'en_attente') === statusFilter); }
+  if (txt){
+    items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt));
+  }
+  if (statusFilter !== 'all'){
+    items = items.filter(x => (x.status || 'en_attente') === statusFilter);
+  }
   items.sort((a,b) => sort === 'oldest' ? new Date(a.createdAt) - new Date(b.createdAt) : new Date(b.createdAt) - new Date(a.createdAt));
+
   const box = document.getElementById('applications');
   if (!items.length){ box.innerHTML = '<div class="item muted">Aucune candidature.</div>'; return; }
+
   box.innerHTML = items.map(item => `
     <div class="item">
       <div><strong>${item.candidateName || 'Sans nom'}</strong> <span class="pill">${item.status || 'en_attente'}</span></div>
       <div class="muted">Discord : ${item.candidateDiscord || 'N/A'} • Âge RP : ${item.candidateAge || 'N/A'}</div>
       <div style="margin-top:8px">${item.candidateMotivation || ''}</div>
+
+      <select id="status_${item.id}">
+        <option value="en_attente" ${(item.status || 'en_attente') === 'en_attente' ? 'selected' : ''}>En attente</option>
+        <option value="acceptee" ${(item.status || '') === 'acceptee' ? 'selected' : ''}>Acceptée</option>
+        <option value="refusee" ${(item.status || '') === 'refusee' ? 'selected' : ''}>Refusée</option>
+      </select>
+
+      <textarea id="note_${item.id}" placeholder="Note interne staff">${item.staffNote || ''}</textarea>
+
+      <div class="row">
+        <button onclick="saveApplication(${item.id})">Enregistrer</button>
+      </div>
     </div>
   `).join('');
 }
+
+async function saveApplication(id){
+  if (!canReception()) return;
+  const status = document.getElementById('status_' + id).value;
+  const staffNote = document.getElementById('note_' + id).value;
+  const out = await api('/api?action=update_application', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ id, status, staffNote })
+  });
+  if (!out) return;
+  if (out.data.ok) {
+    refreshApplications();
+    refreshLogs();
+  } else {
+    alert(out.data.error || 'Erreur de mise à jour');
+  }
+}
+
 async function refreshLogs(){
   if (!canAdmin()) return;
   const out = await api('/api?action=logs');
