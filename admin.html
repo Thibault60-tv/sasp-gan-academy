@@ -70,14 +70,14 @@
   </div>
 
   <script>
-    async function api(path, options={}) {
+    async function api(path, options = {}) {
       const res = await fetch(path, options);
-      const data = await res.json().catch(()=>({}));
+      const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
         window.location.href = '/login.html';
         return null;
       }
-      return {res, data};
+      return { res, data };
     }
 
     function setMsg(id, cls, text) {
@@ -87,33 +87,67 @@
       el.style.display = 'block';
     }
 
+    function b64toBlob(b64Data, contentType = 'application/pdf', sliceSize = 512) {
+      const byteCharacters = atob(b64Data);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+        const byteNumbers = new Array(slice.length);
+
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      return new Blob(byteArrays, { type: contentType });
+    }
+
     async function sendCertificate() {
       const payload = {
         name: document.getElementById('certName').value.trim(),
         date: document.getElementById('certDate').value.trim(),
         signature: document.getElementById('certSignature').value.trim()
       };
+
       const out = await api('/api/create-certificate', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
       if (!out) return;
 
       if (out.data.ok) {
         setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord.');
+
         const linkBox = document.getElementById('certLinkBox');
         const actions = document.getElementById('certActions');
         const pdf = document.getElementById('pdfDownload');
         const verify = document.getElementById('verifyLink');
-        pdf.href = out.data.pdfUrl;
+
+        const base64 = out.data.pdfUrl.split(',')[1];
+        const blob = b64toBlob(base64, 'application/pdf');
+        const url = URL.createObjectURL(blob);
+
+        pdf.href = url;
+        pdf.download = 'Certificat_SASP_' + payload.name + '.pdf';
+        pdf.innerText = 'Télécharger le certificat PDF';
+
         verify.href = out.data.verifyUrl;
+
         linkBox.style.display = 'block';
         actions.style.display = 'flex';
-        linkBox.innerHTML = '<strong>Lien vérification :</strong><br>' + out.data.verifyUrl + '<br><br><strong>Lien PDF :</strong><br>' + out.data.pdfUrl;
+        linkBox.innerHTML =
+          '<strong>Lien vérification :</strong><br>' + out.data.verifyUrl +
+          '<br><br><strong>PDF prêt au téléchargement.</strong>';
       } else {
         setMsg('certMsg', 'err', out.data.error || 'Erreur.');
       }
+
       refreshLogs();
     }
 
@@ -153,7 +187,7 @@
     }
 
     async function logout() {
-      await fetch('/api/logout', {method:'POST'});
+      await fetch('/api/logout', { method: 'POST' });
       window.location.href = '/login.html';
     }
 
