@@ -550,20 +550,33 @@ async function routeAcceptApplicationCreateAgent(req, res) {
 
   const app = rows[0];
   const createdAt = new Date().toISOString();
-
   let agents = await fetchRows(`agents?select=id,name,grade,matricule,division,status,created_at&name=eq.${encodeURIComponent(app.candidate_name)}&limit=1`);
   let agentId = null;
+  let matricule = null;
+  const grade = "Cadet";
 
   if (agents.length) {
     agentId = agents[0].id;
+    matricule = agents[0].matricule || "";
+    const updateExistingRes = await supabaseRequest(`agents?id=eq.${encodeURIComponent(agentId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        grade,
+        division: agents[0].division || "GAN",
+        status: "En formation"
+      })
+    });
+    const updateExistingText = await updateExistingRes.text();
+    if (!updateExistingRes.ok) return json(res, 500, { ok: false, error: updateExistingText });
   } else {
-    const matricule = await getNextMatricule();
+    const matriculeValue = await getNextMatricule();
+    matricule = matriculeValue;
     const createRes = await supabaseRequest("agents", {
       method: "POST",
       body: JSON.stringify([{
         name: app.candidate_name,
-        grade: "Cadet",
-        matricule,
+        grade,
+        matricule: matriculeValue,
         division: "GAN",
         status: "En formation",
         created_at: createdAt
@@ -572,29 +585,55 @@ async function routeAcceptApplicationCreateAgent(req, res) {
     const text = await createRes.text();
     if (!createRes.ok) return json(res, 500, { ok: false, error: text });
     agentId = JSON.parse(text)[0].id;
-    await insertLog("Agent créé depuis candidature", `${app.candidate_name} • ${matricule}`);
+    await insertLog("Agent créé depuis candidature", `${app.candidate_name} • ${matriculeValue}`);
   }
+
+  const certNumber = await getNextCertificateNumber();
+  const todayFr = new Date().toLocaleDateString("fr-FR");
+
+  const certRes = await supabaseRequest("certificates", {
+    method: "POST",
+    body: JSON.stringify([{
+      name: app.candidate_name,
+      date: todayFr,
+      signature: "SASP Command",
+      agent_id: agentId,
+      certificate_number: certNumber,
+      mention: "Recrutement",
+      comment: "Certificat automatique recrutement",
+      created_at: createdAt
+    }])
+  });
+  const certText = await certRes.text();
+  if (!certRes.ok) return json(res, 500, { ok: false, error: certText });
+  const certificate = JSON.parse(certText)[0];
 
   const updateRes = await supabaseRequest(`applications?id=eq.${encodeURIComponent(body.id)}`, {
     method: "PATCH",
     body: JSON.stringify({
       status: "acceptee",
-      staff_note: body.staffNote || app.staff_note || "Candidature acceptée"
+      staff_note: body.staffNote || app.staff_note || "Accepté + agent créé"
     })
   });
   const updateText = await updateRes.text();
   if (!updateRes.ok) return json(res, 500, { ok: false, error: updateText });
 
   try {
+    const mention = app.candidate_discord && String(app.candidate_discord).match(/\d{5,}/)
+      ? `<@${String(app.candidate_discord).replace(/[^\d]/g, '')}>`
+      : null;
+
     await sendDiscordWebhook(applicationWebhookUrl(), {
+      content: mention || undefined,
       embeds: [{
-        title: "Candidature acceptée",
+        title: "Recrutement accepté",
         color: 5763719,
         fields: [
           { name: "Nom RP", value: app.candidate_name || "N/A", inline: true },
-          { name: "Discord", value: app.candidate_discord || "N/A", inline: true },
-          { name: "Statut", value: "Acceptée", inline: true },
-          { name: "Agent créé", value: "Oui", inline: true },
+          { name: "Grade", value: grade, inline: true },
+          { name: "Matricule", value: matricule || "N/A", inline: true },
+          { name: "Certificat", value: certNumber || "N/A", inline: true },
+          { name: "Statut", value: "Agent créé", inline: true },
           { name: "Note staff", value: body.staffNote || "Candidature acceptée" }
         ],
         footer: { text: `SASP GAN Academy • ${getRole(payload)}` },
@@ -605,8 +644,8 @@ async function routeAcceptApplicationCreateAgent(req, res) {
     await insertLog("Erreur webhook recrutement", err.message || "Erreur inconnue");
   }
 
-  await insertLog("Candidature acceptée", `${app.candidate_name} • agent créé`);
-  return json(res, 200, { ok: true, agentId });
+  await insertLog("Recrutement complet", `${app.candidate_name} • ${grade} • ${matricule} • ${certNumber}`);
+  return json(res, 200, { ok: true, agentId, certificateId: certificate.id, certNumber, matricule, grade });
 }
 
 async function routeRejectApplication(req, res) {
@@ -652,6 +691,7 @@ async function routeRejectApplication(req, res) {
   await insertLog("Candidature refusée", `${app.candidate_name}`);
   return json(res, 200, { ok: true });
 }
+
 
 module.exports = async (req, res) => {
   try {

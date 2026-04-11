@@ -357,7 +357,10 @@ async function quickAccept(id){
   });
   if (!out) return;
   if (out.data.ok) {
-    alert('Candidature acceptée et agent créé ✅');
+    alert('Candidature acceptée
+Agent créé automatiquement
+Certificat recrutement créé
+Discord notifié');
     refreshAll();
   } else {
     alert(out.data.error || 'Erreur acceptation');
@@ -373,7 +376,7 @@ async function quickReject(id){
   });
   if (!out) return;
   if (out.data.ok) {
-    alert('Candidature refusée ❌');
+    alert('Candidature refusée');
     refreshAll();
   } else {
     alert(out.data.error || 'Erreur refus');
