@@ -7,12 +7,14 @@
   <style>
     :root{
       --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;
+      --red:#f87171;--blue:#93c5fd;--green:#86efac;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top, rgba(251,191,36,.08), transparent 25%), linear-gradient(180deg,#111214,#09090b);color:var(--text)}
     .wrap{max-width:1450px;margin:0 auto;padding:24px}
     .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+    .role-admin{color:var(--red)} .role-formateur{color:var(--gold)} .role-accueil{color:var(--blue)}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
     .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
@@ -25,7 +27,7 @@
     .primary{background:var(--gold);color:#111;border:none}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
     .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
-    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:#86efac}
+    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     .list{display:grid;gap:12px}
     .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
@@ -37,9 +39,18 @@
     .admin-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .hidden{display:none !important}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
-    .modal{width:min(900px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
+    .modal{width:min(980px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
     .cert-list{display:grid;gap:10px;margin-top:12px}
     .cert-item{background:#09090b;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .search-wrap{position:relative}
+    .suggestions{position:absolute;top:100%;left:0;right:0;background:#0b0b0d;border:1px solid var(--line);border-radius:16px;margin-top:8px;overflow:hidden;z-index:30;display:none}
+    .suggestion{padding:12px 14px;border-top:1px solid #1d1e22;cursor:pointer}
+    .suggestion:first-child{border-top:none}
+    .suggestion:hover{background:#15161a}
+    .status{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:.14em}
+    .status-en_attente{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d}
+    .status-acceptee{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+    .status-refusee{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     @media (max-width:1100px){.grid,.admin-grid,.agent-grid,.stats{grid-template-columns:1fr}}
   </style>
 </head>
@@ -47,7 +58,7 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">RÔLES DYNAMIQUES</div>
+        <div class="badge">PHASE 2 RECHERCHE PRO</div>
         <h1>SASP GAN Academy — Panel Admin</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
@@ -61,10 +72,19 @@
       <div class="stat"><div class="label">Agents</div><div class="value" id="statAgents">0</div></div>
       <div class="stat"><div class="label">Certificats</div><div class="value" id="statCerts">0</div></div>
       <div class="stat"><div class="label">Candidatures</div><div class="value" id="statApps">0</div></div>
-      <div class="stat"><div class="label">Admins</div><div class="value" id="statAdmins">0</div></div>
+      <div class="stat"><div class="label">En attente</div><div class="value" id="statPending">0</div></div>
     </div>
 
     <div class="grid">
+      <div class="card">
+        <h2>Recherche PRO</h2>
+        <div class="search-wrap">
+          <input id="globalSearch" placeholder="Rechercher un agent ou un certificat GAN-2026-0001" oninput="runSearch()" autocomplete="off" />
+          <div id="searchSuggestions" class="suggestions"></div>
+        </div>
+        <div id="searchMsg" class="msg"></div>
+      </div>
+
       <div class="card" id="sectionCertificates">
         <h2>Envoyer un certificat PDF</h2>
         <input id="certName" placeholder="Nom RP" />
@@ -171,12 +191,21 @@
     let currentAgentId = null;
     let currentUserRole = 'admin';
 
+    function roleLabelCls(role) {
+      if (role === 'admin') return 'role-admin';
+      if (role === 'formateur') return 'role-formateur';
+      if (role === 'accueil') return 'role-accueil';
+      return '';
+    }
+
     function canAdmin() { return currentUserRole === 'admin'; }
     function canTrainer() { return currentUserRole === 'admin' || currentUserRole === 'formateur'; }
     function canReception() { return currentUserRole === 'admin' || currentUserRole === 'accueil'; }
 
     function applyRoleUI() {
-      document.getElementById('currentRole').innerText = currentUserRole;
+      const el = document.getElementById('currentRole');
+      el.innerText = currentUserRole;
+      el.className = roleLabelCls(currentUserRole);
       document.getElementById('sectionAdmins').classList.toggle('hidden', !canAdmin());
       document.getElementById('sectionLogs').classList.toggle('hidden', !canAdmin());
       document.getElementById('sectionCertificates').classList.toggle('hidden', !canTrainer());
@@ -222,6 +251,50 @@
       applyRoleUI();
     }
 
+    async function runSearch() {
+      const q = document.getElementById('globalSearch').value.trim();
+      const box = document.getElementById('searchSuggestions');
+      if (q.length < 2) {
+        box.style.display = 'none';
+        box.innerHTML = '';
+        return;
+      }
+      const out = await api('/api?action=search&q=' + encodeURIComponent(q));
+      if (!out || !out.data.ok) {
+        box.style.display = 'none';
+        return;
+      }
+      const items = out.data.items || [];
+      if (!items.length) {
+        box.style.display = 'block';
+        box.innerHTML = '<div class="suggestion muted">Aucun résultat</div>';
+        return;
+      }
+      box.innerHTML = items.map(item => {
+        if (item.type === 'agent') {
+          return `<div class="suggestion" onclick="openAgentModal('${item.id}'); hideSuggestions();"><strong>${item.name}</strong><br><span class="muted">Agent • ${item.grade || 'Cadet'}</span></div>`;
+        }
+        return `<div class="suggestion" onclick="openCertificateBySearch('${item.id}'); hideSuggestions();"><strong>${item.certificateNumber || 'Sans numéro'}</strong><br><span class="muted">${item.name || 'Sans nom'}</span></div>`;
+      }).join('');
+      box.style.display = 'block';
+    }
+
+    function hideSuggestions() {
+      const box = document.getElementById('searchSuggestions');
+      box.style.display = 'none';
+      box.innerHTML = '';
+    }
+
+    async function openCertificateBySearch(certId) {
+      const out = await api('/api?action=certificate_details&id=' + encodeURIComponent(certId));
+      if (!out || !out.data.ok) return;
+      const cert = out.data.certificate;
+      setMsg('searchMsg', 'ok', 'Certificat trouvé : ' + (cert.certificateNumber || '') + ' • ' + (cert.name || ''));
+      if (cert.verifyUrl) {
+        document.getElementById('verifyLink').href = cert.verifyUrl;
+      }
+    }
+
     async function sendCertificate() {
       if (!canTrainer()) return;
       const payload = {
@@ -237,7 +310,7 @@
       if (!out) return;
 
       if (out.data.ok) {
-        setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord.');
+        setMsg('certMsg', 'ok', 'Certificat PDF créé et envoyé sur Discord. Réf: ' + (out.data.certificateNumber || ''));
         const linkBox = document.getElementById('certLinkBox');
         const actions = document.getElementById('certActions');
         const pdf = document.getElementById('pdfDownload');
@@ -251,7 +324,8 @@
         linkBox.style.display = 'block';
         actions.style.display = 'flex';
         linkBox.innerHTML =
-          '<strong>Lien vérification :</strong><br>' + out.data.verifyUrl +
+          '<strong>Référence :</strong> ' + (out.data.certificateNumber || '') +
+          '<br><strong>Lien vérification :</strong><br>' + out.data.verifyUrl +
           '<br><br><strong>PDF prêt au téléchargement.</strong>';
       } else {
         setMsg('certMsg', 'err', out.data.error || 'Erreur.');
@@ -284,6 +358,19 @@
       if (canAdmin()) refreshLogs();
     }
 
+    async function saveApplication(id) {
+      const status = document.getElementById('status_' + id).value;
+      const staffNote = document.getElementById('note_' + id).value;
+      const out = await api('/api?action=update_application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status, staffNote })
+      });
+      if (!out) return;
+      refreshApplications();
+      if (canAdmin()) refreshLogs();
+    }
+
     async function refreshApplications() {
       if (!canReception()) return;
       const out = await api('/api?action=applications');
@@ -291,15 +378,28 @@
       const box = document.getElementById('applications');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
       document.getElementById('statApps').innerText = items.length;
+      document.getElementById('statPending').innerText = items.filter(x => (x.status || 'en_attente') === 'en_attente').length;
       if (!out.data.ok || !items.length) {
         box.innerHTML = '<div class="item muted">Aucune candidature enregistrée.</div>';
         return;
       }
       box.innerHTML = items.map(item => `
         <div class="item">
-          <strong>${item.candidateName || 'Sans nom'}</strong>
+          <div class="agent-head">
+            <strong>${item.candidateName || 'Sans nom'}</strong>
+            <span class="status status-${item.status || 'en_attente'}">${item.status || 'en_attente'}</span>
+          </div>
           <div class="muted">Âge RP: ${item.candidateAge || 'N/A'} • Discord: ${item.candidateDiscord || 'N/A'}</div>
           <div style="margin-top:8px">${item.candidateMotivation || ''}</div>
+          <select id="status_${item.id}">
+            <option value="en_attente" ${(item.status || 'en_attente') === 'en_attente' ? 'selected' : ''}>En attente</option>
+            <option value="acceptee" ${(item.status || '') === 'acceptee' ? 'selected' : ''}>Acceptée</option>
+            <option value="refusee" ${(item.status || '') === 'refusee' ? 'selected' : ''}>Refusée</option>
+          </select>
+          <textarea id="note_${item.id}" placeholder="Note interne staff">${item.staffNote || ''}</textarea>
+          <div class="row">
+            <button onclick="saveApplication(${item.id})">Enregistrer</button>
+          </div>
           <div class="muted" style="margin-top:8px">${new Date(item.createdAt).toLocaleString('fr-FR')}</div>
         </div>
       `).join('');
@@ -356,7 +456,6 @@
       if (!out) return;
       const box = document.getElementById('admins');
       const items = Array.isArray(out.data.items) ? out.data.items : [];
-      document.getElementById('statAdmins').innerText = items.length;
       if (!out.data.ok || !items.length) {
         box.innerHTML = '<div class="item muted">Aucun admin enregistré.</div>';
         return;
@@ -411,8 +510,8 @@
       const certs = Array.isArray(out.data.certificates) ? out.data.certificates : [];
       document.getElementById('agentCertificates').innerHTML = certs.length ? certs.map(cert => `
         <div class="cert-item">
-          <strong>${cert.name || 'Sans nom'}</strong><br>
-          <span class="muted">Date : ${cert.date || 'N/A'} • Signature : ${cert.signature || 'N/A'}</span><br>
+          <strong>${cert.certificateNumber || 'Sans numéro'}</strong><br>
+          <span class="muted">${cert.name || 'Sans nom'} • Date : ${cert.date || 'N/A'} • Signature : ${cert.signature || 'N/A'}</span><br>
           <span class="muted">Créé le : ${cert.createdAt ? new Date(cert.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
         </div>
       `).join('') : '<div class="item muted">Aucun certificat.</div>';
@@ -450,6 +549,12 @@
       refreshAgents();
       refreshAdmins();
     }
+
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('searchSuggestions').contains(e.target) && e.target.id !== 'globalSearch') {
+        hideSuggestions();
+      }
+    });
 
     refreshAll();
   </script>
