@@ -3,49 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — SASP GAN Academy</title>
+  <title>SASP GAN Academy — Visual Finish</title>
   <style>
     :root{
-      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;
-      --red:#f87171;--blue:#93c5fd;--green:#86efac;
+      --bg:#09090b;--panel:#111113;--line:#25262b;--line2:#33343a;--text:#f5f5f5;--muted:#a1a1aa;
+      --gold:#fbbf24;--gold2:#fde68a;--red:#f87171;--blue:#93c5fd;--green:#86efac;
+      --shadow:0 16px 40px rgba(0,0,0,.28);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:
-      radial-gradient(circle at top, rgba(251,191,36,.11), transparent 20%),
-      linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1500px;margin:0 auto;padding:24px}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(251,191,36,.12), transparent 18%),
+        radial-gradient(circle at 80% 20%, rgba(59,130,246,.06), transparent 20%),
+        linear-gradient(180deg,#111214,#09090b);
+    }
+    .wrap{max-width:1520px;margin:0 auto;padding:28px}
     .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-    .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-    .role-admin{color:var(--red)} .role-formateur{color:var(--gold)} .role-accueil{color:var(--blue)}
+    .title-wrap h1{margin:10px 0 6px;font-size:38px}
+    .title-wrap p{margin:0;color:var(--muted)}
+    .badge{
+      display:inline-flex;padding:8px 12px;border-radius:999px;
+      border:1px solid rgba(251,191,36,.24);
+      background:linear-gradient(180deg,rgba(251,191,36,.14),rgba(251,191,36,.05));
+      color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase
+    }
+    .role-admin{color:var(--red)} .role-formateur{color:var(--gold2)} .role-accueil{color:var(--blue)}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
-    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:0 12px 34px rgba(0,0,0,.18)}
-    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:22px}
-    .stat{background:#09090b;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .card{
+      background:linear-gradient(180deg,rgba(19,19,21,.98),rgba(12,12,14,.98));
+      border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)
+    }
+    .card h2,.card h3{margin-top:0}
+    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:24px}
+    .stat{
+      background:linear-gradient(180deg,#0d0d10,#09090b);
+      border:1px solid var(--line);border-radius:20px;padding:18px
+    }
     .stat .label{font-size:13px;color:var(--muted)}
-    .stat .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
-    input,select,textarea{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:16px;color:#fff;padding:14px 16px}
+    .stat .value{margin-top:8px;font-size:30px;color:var(--gold);font-weight:800}
+    input,select,textarea{
+      width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line2);
+      border-radius:16px;color:#fff;padding:14px 16px;outline:none
+    }
+    input:focus,select:focus,textarea:focus{border-color:rgba(251,191,36,.5);box-shadow:0 0 0 3px rgba(251,191,36,.08)}
     textarea{min-height:120px;resize:vertical}
-    button,a.btn{padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-    .primary{background:var(--gold);color:#111;border:none}
+    button,a.btn{
+      padding:14px 18px;border-radius:16px;border:1px solid var(--line2);
+      background:#17181c;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;transition:.18s transform,.18s opacity,.18s border-color
+    }
+    button:hover,a.btn:hover{transform:translateY(-1px);border-color:rgba(251,191,36,.26)}
+    .primary{background:linear-gradient(180deg,#fbbf24,#f59e0b);color:#111;border:none}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
     .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
     .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
     .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     .list{display:grid;gap:12px}
-    .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .item{
+      background:linear-gradient(180deg,#0c0c0f,#09090b);
+      border:1px solid var(--line);border-radius:18px;padding:14px
+    }
     .muted{color:var(--muted)}
-    .linkbox{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#09090b;word-break:break-all}
+    .linkbox{
+      margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#09090b;word-break:break-all
+    }
     .agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .agent-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-    .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
+    .pill{
+      display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);
+      border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em
+    }
     .admin-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .hidden{display:none !important}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
-    .modal{width:min(980px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:24px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal{
+      width:min(980px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#131317,#0d0d10);
+      border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:var(--shadow)
+    }
     .cert-list{display:grid;gap:10px;margin-top:12px}
     .cert-item{background:#09090b;border:1px solid var(--line);border-radius:14px;padding:12px}
     .search-wrap{position:relative}
-    .suggestions{position:absolute;top:100%;left:0;right:0;background:#0b0b0d;border:1px solid var(--line);border-radius:16px;margin-top:8px;overflow:hidden;z-index:30;display:none}
+    .suggestions{
+      position:absolute;top:100%;left:0;right:0;background:#0b0b0d;border:1px solid var(--line);
+      border-radius:16px;margin-top:8px;overflow:hidden;z-index:30;display:none;box-shadow:var(--shadow)
+    }
     .suggestion{padding:12px 14px;border-top:1px solid #1d1e22;cursor:pointer}
     .suggestion:first-child{border-top:none}.suggestion:hover{background:#15161a}
     .status{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:11px;text-transform:uppercase;letter-spacing:.14em}
@@ -54,16 +98,20 @@
     .status-refusee{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
     .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
     .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px}
+    .hero-card{
+      border:1px solid rgba(251,191,36,.18);
+      background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(17,17,19,.98) 35%,rgba(17,17,19,.98));
+    }
     @media (max-width:1100px){.grid,.admin-grid,.agent-grid,.stats,.two-col,.toolbar{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div>
-        <div class="badge">PHASE 4 ULTIMATE</div>
+      <div class="title-wrap">
+        <div class="badge">PHASE 5 VISUAL FINISH</div>
         <h1>SASP GAN Academy — Panel Admin</h1>
-        <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
+        <p>Rôle connecté : <span id="currentRole">chargement...</span></p>
       </div>
       <div class="row">
         <button onclick="exportDashboard()">Exporter dashboard JSON</button>
@@ -82,7 +130,7 @@
     </div>
 
     <div class="grid">
-      <div class="card">
+      <div class="card hero-card">
         <h2>Recherche PRO</h2>
         <div class="search-wrap">
           <input id="globalSearch" placeholder="Rechercher un agent ou un certificat GAN-2026-0001" oninput="runSearch()" autocomplete="off" />
@@ -357,13 +405,8 @@
           (x.candidateDiscord || '').toLowerCase().includes(txt)
         );
       }
-      if (statusFilter !== 'all') {
-        items = items.filter(x => (x.status || 'en_attente') === statusFilter);
-      }
-      items.sort((a,b) => sort === 'oldest'
-        ? new Date(a.createdAt) - new Date(b.createdAt)
-        : new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      if (statusFilter !== 'all') items = items.filter(x => (x.status || 'en_attente') === statusFilter);
+      items.sort((a,b) => sort === 'oldest' ? new Date(a.createdAt) - new Date(b.createdAt) : new Date(b.createdAt) - new Date(a.createdAt));
 
       document.getElementById('statApps').innerText = out.data.items.length;
       document.getElementById('statPending').innerText = out.data.items.filter(x => (x.status || 'en_attente') === 'en_attente').length;
@@ -537,7 +580,9 @@
 
     document.addEventListener('click', (e) => {
       if (!document.getElementById('searchSuggestions').contains(e.target) && e.target.id !== 'globalSearch') {
-        hideSuggestions();
+        const box = document.getElementById('searchSuggestions');
+        box.style.display = 'none';
+        box.innerHTML = '';
       }
     });
 
