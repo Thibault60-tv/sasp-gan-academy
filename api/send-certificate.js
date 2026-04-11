@@ -1,4 +1,7 @@
-const { parseJson, requireAdmin, supabaseRequest } = require("./_auth");
+const { parseJson, requireAdmin } = require("./_auth");
+
+let logs = globalThis.__ganLogs || [];
+globalThis.__ganLogs = logs;
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée." });
@@ -10,7 +13,6 @@ module.exports = async (req, res) => {
 
     const body = await parseJson(req);
     const { name, date, signature } = body;
-    const createdAt = new Date().toISOString();
 
     const discordRes = await fetch(webhookUrl, {
       method: "POST",
@@ -26,29 +28,21 @@ module.exports = async (req, res) => {
             { name: "Signature", value: signature || "Non renseignée", inline: true }
           ],
           footer: { text: "SASP GAN Academy • Certificate Dispatch" },
-          timestamp: createdAt
+          timestamp: new Date().toISOString()
         }]
       })
     });
 
     if (!discordRes.ok) return res.status(502).json({ ok: false, error: "Échec d'envoi Discord." });
 
-    const logRes = await supabaseRequest("action_logs", {
-      method: "POST",
-      body: JSON.stringify([{
-        action: "Certificat envoyé",
-        details: `${name || "Sans nom"} • ${date || "Sans date"}`,
-        created_at: createdAt
-      }])
+    logs.unshift({
+      action: "Certificat envoyé",
+      details: `${name || "Sans nom"} • ${date || "Sans date"}`,
+      createdAt: new Date().toISOString()
     });
 
-    if (!logRes.ok) {
-      const text = await logRes.text();
-      return res.status(500).json({ ok: false, error: `Erreur base logs: ${text}` });
-    }
-
     return res.status(200).json({ ok: true });
-  } catch (err) {
-    return res.status(400).json({ ok: false, error: err.message || "Requête invalide." });
+  } catch {
+    return res.status(400).json({ ok: false, error: "Requête invalide." });
   }
 };

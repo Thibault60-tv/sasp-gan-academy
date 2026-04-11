@@ -1,4 +1,9 @@
-const { parseJson, supabaseRequest } = require("./_auth");
+const { parseJson } = require("./_auth");
+
+let applications = globalThis.__ganApplications || [];
+let logs = globalThis.__ganLogs || [];
+globalThis.__ganApplications = applications;
+globalThis.__ganLogs = logs;
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée." });
@@ -13,32 +18,9 @@ module.exports = async (req, res) => {
       return res.status(400).json({ ok: false, error: "Champs obligatoires manquants." });
     }
 
-    const createdAt = new Date().toISOString();
-
-    const appRes = await supabaseRequest("applications", {
-      method: "POST",
-      body: JSON.stringify([{
-        candidate_name: candidateName,
-        candidate_age: candidateAge || null,
-        candidate_discord: candidateDiscord,
-        candidate_motivation: candidateMotivation,
-        created_at: createdAt
-      }])
-    });
-
-    if (!appRes.ok) {
-      const text = await appRes.text();
-      return res.status(500).json({ ok: false, error: `Erreur base applications: ${text}` });
-    }
-
-    await supabaseRequest("action_logs", {
-      method: "POST",
-      body: JSON.stringify([{
-        action: "Nouvelle candidature",
-        details: candidateName,
-        created_at: createdAt
-      }])
-    });
+    const item = { candidateName, candidateAge, candidateDiscord, candidateMotivation, createdAt: new Date().toISOString() };
+    applications.unshift(item);
+    logs.unshift({ action: "Nouvelle candidature", details: candidateName, createdAt: new Date().toISOString() });
 
     const discordRes = await fetch(webhookUrl, {
       method: "POST",
@@ -54,14 +36,14 @@ module.exports = async (req, res) => {
             { name: "Motivation", value: candidateMotivation }
           ],
           footer: { text: "SASP GAN Academy • ELITE MASTER" },
-          timestamp: createdAt
+          timestamp: new Date().toISOString()
         }]
       })
     });
 
     if (!discordRes.ok) return res.status(502).json({ ok: false, error: "Échec d'envoi Discord." });
     return res.status(200).json({ ok: true });
-  } catch (err) {
-    return res.status(400).json({ ok: false, error: err.message || "Requête invalide." });
+  } catch {
+    return res.status(400).json({ ok: false, error: "Requête invalide." });
   }
 };

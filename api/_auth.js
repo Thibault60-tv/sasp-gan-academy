@@ -52,28 +52,4 @@ function requireAdmin(req, res) {
   return payload;
 }
 
-function getSupabaseConfig() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.");
-  }
-  return { url: url.replace(/\/+$/, ""), key };
-}
-
-async function supabaseRequest(path, options = {}) {
-  const { url, key } = getSupabaseConfig();
-  const res = await fetch(`${url}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-      ...(options.headers || {})
-    }
-  });
-  return res;
-}
-
-module.exports = { parseJson, parseCookies, signToken, verifyToken, requireAdmin, getSupabaseConfig, supabaseRequest };
+module.exports = { parseJson, parseCookies, signToken, verifyToken, requireAdmin };
