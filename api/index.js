@@ -500,36 +500,6 @@ async function routeDashboard(req, res) {
   });
 }
 
-module.exports = async (req, res) => {
-  try {
-    const url = new URL(req.url, "https://dummy");
-    const action = url.searchParams.get("action");
-    if (!action) return json(res, 400, { ok: false, error: "Action manquante." });
-
-    if (action === "login") return routeLogin(req, res);
-    if (action === "logout") return routeLogout(req, res);
-    if (action === "session") return routeSession(req, res);
-    if (action === "submit_application") return routeSubmitApplication(req, res);
-    if (action === "applications") return routeApplications(req, res);
-    if (action === "update_application") return routeUpdateApplication(req, res);
-    if (action === "logs") return routeLogs(req, res);
-    if (action === "admins") return routeAdmins(req, res);
-    if (action === "agents") return routeAgents(req, res);
-    if (action === "agent_details") return routeAgentDetails(req, res);
-    if (action === "certificate_details") return routeCertificateDetails(req, res);
-    if (action === "search") return routeSearch(req, res);
-    if (action === "update_agent_grade") return routeUpdateAgentGrade(req, res);
-    if (action === "create_certificate") return routeCreateCertificate(req, res);
-    if (action === "verify") return routeVerify(req, res);
-    if (action === "dashboard") return routeDashboard(req, res);
-
-    return json(res, 404, { ok: false, error: "Action inconnue." });
-  } catch (err) {
-    return json(res, 500, { ok: false, error: err.message || "Erreur serveur." });
-  }
-
-// Add this route into your current api/index.js from RP phase 3/5
-
 async function routeUpdateAgentFull(req, res) {
   const payload = requireRole(req, res, ["admin"]);
   if (!payload) return;
@@ -568,23 +538,32 @@ async function routeUpdateAgentFull(req, res) {
   return json(res, 200, { ok: true });
 }
 
-// And in the router:
-if (action === "update_agent_full") return routeUpdateAgentFull(req, res);
+module.exports = async (req, res) => {
+  try {
+    const url = new URL(req.url, "https://dummy");
+    const action = url.searchParams.get("action");
+    if (!action) return json(res, 400, { ok: false, error: "Action manquante." });
 
+    if (action === "login") return routeLogin(req, res);
+    if (action === "logout") return routeLogout(req, res);
+    if (action === "session") return routeSession(req, res);
+    if (action === "submit_application") return routeSubmitApplication(req, res);
+    if (action === "applications") return routeApplications(req, res);
+    if (action === "update_application") return routeUpdateApplication(req, res);
+    if (action === "logs") return routeLogs(req, res);
+    if (action === "admins") return routeAdmins(req, res);
+    if (action === "agents") return routeAgents(req, res);
+    if (action === "agent_details") return routeAgentDetails(req, res);
+    if (action === "certificate_details") return routeCertificateDetails(req, res);
+    if (action === "search") return routeSearch(req, res);
+    if (action === "update_agent_grade") return routeUpdateAgentGrade(req, res);
+    if (action === "update_agent_full") return routeUpdateAgentFull(req, res);
+    if (action === "create_certificate") return routeCreateCertificate(req, res);
+    if (action === "verify") return routeVerify(req, res);
+    if (action === "dashboard") return routeDashboard(req, res);
 
-// ADD Discord embed style upgrade
-const embed = {
-  title: "🎓 Nouveau certificat",
-  color: 15844367,
-  fields: [
-    { name: "Nom", value: name },
-    { name: "Date", value: date },
-    { name: "Signature", value: signature },
-    ...(comment ? [{ name: "Commentaire", value: comment }] : []),
-    { name: "Vérification", value: verifyUrl }
-  ],
-  footer: { text: "SASP GAN Academy" }
-}
-
-
+    return json(res, 404, { ok: false, error: "Action inconnue." });
+  } catch (err) {
+    return json(res, 500, { ok: false, error: err.message || "Erreur serveur." });
+  }
 };

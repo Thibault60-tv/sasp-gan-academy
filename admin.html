@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SASP GAN Academy — Agent System</title>
+  <title>SASP GAN Academy — Fix Agents & PDF</title>
   <style>
     :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
@@ -26,6 +26,7 @@
     .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px} .hidden{display:none !important} .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
     .modal{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
+    .linkbox{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#09090b;word-break:break-all;display:none}
     @media (max-width:1100px){.grid,.stats,.toolbar,.two-col{grid-template-columns:1fr}}
   </style>
 </head>
@@ -33,7 +34,7 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">AGENT SYSTEM UPGRADE</div>
+        <div class="badge">FIX AGENTS + PDF</div>
         <h1 style="margin:10px 0 6px">SASP GAN Academy — Staff Panel</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
@@ -69,6 +70,11 @@
             <textarea id="certComment" placeholder="Commentaire (optionnel)"></textarea>
             <div class="row"><button class="primary" onclick="sendCertificate()">Créer PDF + Discord</button></div>
             <div id="certMsg" class="msg"></div>
+            <div id="certLinks" class="linkbox"></div>
+            <div class="row hidden" id="certActions">
+              <a id="pdfDownload" class="btn primary" href="#" target="_blank" rel="noreferrer">Télécharger le PDF</a>
+              <a id="verifyLink" class="btn" href="#" target="_blank" rel="noreferrer">Ouvrir la vérification</a>
+            </div>
           </div>
         </div>
 
@@ -151,6 +157,17 @@ function setMsg(id, cls, text){
   el.textContent = text;
   el.style.display = 'block';
 }
+function b64toBlob(b64Data, contentType = 'application/pdf', sliceSize = 512) {
+  const byteCharacters = atob(b64Data);
+  const byteArrays = [];
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  return new Blob(byteArrays, { type: contentType });
+}
 async function loadSessionRole(){
   const out = await api('/api?action=session');
   if (!out || !out.data.ok) return;
@@ -185,8 +202,29 @@ async function sendCertificate(){
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
   if (!out) return;
-  setMsg('certMsg', out.data.ok ? 'ok' : 'err',
-    out.data.ok ? `Certificat créé : ${out.data.certificateNumber || ''} • Grade ${out.data.autoGrade || ''}` : (out.data.error || 'Erreur.'));
+
+  if (out.data.ok) {
+    setMsg('certMsg', 'ok', `Certificat créé : ${out.data.certificateNumber || ''} • Grade ${out.data.autoGrade || ''}`);
+    const linkBox = document.getElementById('certLinks');
+    const actions = document.getElementById('certActions');
+    const pdf = document.getElementById('pdfDownload');
+    const verify = document.getElementById('verifyLink');
+
+    if (out.data.pdfUrl) {
+      const base64 = out.data.pdfUrl.split(',')[1];
+      const blob = b64toBlob(base64, 'application/pdf');
+      const url = URL.createObjectURL(blob);
+      pdf.href = url;
+      pdf.download = 'Certificat_SASP_' + payload.name + '.pdf';
+    }
+    if (out.data.verifyUrl) verify.href = out.data.verifyUrl;
+
+    linkBox.style.display = 'block';
+    linkBox.innerHTML = `<strong>Référence :</strong> ${out.data.certificateNumber || 'N/A'}<br><strong>Vérification :</strong><br>${out.data.verifyUrl || 'N/A'}`;
+    actions.classList.remove('hidden');
+  } else {
+    setMsg('certMsg', 'err', out.data.error || 'Erreur.');
+  }
   refreshAll();
 }
 async function refreshAgents(){
