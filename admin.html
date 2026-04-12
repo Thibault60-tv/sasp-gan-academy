@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SASP GAN Academy — Admin Stable</title>
+  <title>SASP GAN Academy — GOD++</title>
   <style>
-    :root{
-      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;
-      --gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd;
-    }
+    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd}
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1500px;margin:0 auto;padding:24px}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at top, rgba(251,191,36,.11), transparent 20%),linear-gradient(180deg,#111214,#09090b)}
+    .wrap{max-width:1550px;margin:0 auto;padding:24px}
     .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
     .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
-    .stat{background:#0c0c0f;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .stat,.card,.timeline-item,.detail-box{background:#0c0c0f;border:1px solid var(--line);border-radius:18px}
+    .stat{padding:16px}
     .label{font-size:13px;color:var(--muted)}
     .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
     .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;margin-top:24px}
-    .card{background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
+    .card{padding:22px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
     .list{display:grid;gap:12px}
-    .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .item,.timeline-item,.detail-box{padding:14px}
     .muted{color:var(--muted)}
     .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
-    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .pill-blue{color:#bfdbfe;border-color:rgba(147,197,253,.2);background:rgba(147,197,253,.08)}
+    .pill-green{color:#86efac;border-color:rgba(134,239,172,.2);background:rgba(134,239,172,.08)}
     input,select,textarea{width:100%;margin-top:12px;background:#09090b;border:1px solid var(--line);border-radius:14px;color:#fff;padding:12px 14px}
     textarea{min-height:100px;resize:vertical}
     button,a.btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:#16171b;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
@@ -35,20 +35,22 @@
     .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px}
     .linkbox{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#09090b;word-break:break-all;display:none}
     .hidden{display:none !important}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
-    .modal{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
-    @media (max-width:1100px){.grid,.stats,.toolbar{grid-template-columns:1fr}}
+    .timeline{display:grid;gap:12px;margin-top:12px}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .agent-detail{margin-top:20px}
+    @media (max-width:1100px){.grid,.stats,.toolbar,.detail-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">ADMIN STABLE</div>
-        <h1 style="margin:10px 0 6px">SASP GAN Academy — Panel Admin</h1>
+        <div class="badge">GOD++ UPGRADE</div>
+        <h1 style="margin:10px 0 6px">SASP GAN Academy — Panel Elite</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
       <div class="row">
+        <button onclick="exportDashboard()">Exporter dashboard</button>
         <button onclick="refreshAll()">Actualiser</button>
         <button onclick="logout()">Déconnexion</button>
       </div>
@@ -89,7 +91,18 @@
           </div>
         </div>
 
-        <div style="margin-top:24px">
+        <div class="agent-detail">
+          <h3>Fiche agent détaillée</h3>
+          <select id="agentDetailSelect" onchange="loadAgentDetail()">
+            <option value="">Choisir un agent</option>
+          </select>
+          <div id="agentDetailBox" class="detail-grid" style="margin-top:12px">
+            <div class="detail-box muted">Sélectionne un agent pour afficher sa fiche.</div>
+          </div>
+          <div id="agentTimeline" class="timeline"></div>
+        </div>
+
+        <div style="margin-top:20px">
           <h3>Agents</h3>
           <div id="agents" class="list"><div class="item muted">Chargement...</div></div>
         </div>
@@ -125,43 +138,9 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="agentEditModal">
-    <div class="modal">
-      <h2>Modifier l’agent</h2>
-      <input id="editName" placeholder="Nom RP" />
-      <input id="editMatricule" placeholder="Matricule" />
-      <select id="editGrade">
-        <option>Cadet</option>
-        <option>Officer</option>
-        <option>Senior Officer</option>
-        <option>Sergeant</option>
-        <option>Lieutenant</option>
-        <option>Captain</option>
-      </select>
-      <select id="editDivision">
-        <option>GAN</option>
-        <option>Narcotics</option>
-        <option>Tactical</option>
-        <option>Command</option>
-      </select>
-      <select id="editStatus">
-        <option>Actif</option>
-        <option>En formation</option>
-        <option>Suspendu</option>
-        <option>Retiré</option>
-      </select>
-      <textarea id="editReason" placeholder="Raison / note staff"></textarea>
-      <div class="row">
-        <button class="primary" onclick="saveAgent()">Enregistrer</button>
-        <button onclick="closeAgentModal()">Fermer</button>
-      </div>
-      <div id="editMsg" class="msg"></div>
-    </div>
-  </div>
-
 <script>
 let currentUserRole = 'admin';
-let currentEditAgentId = null;
+let dashboardCache = null;
 
 function canAdmin(){ return currentUserRole === 'admin'; }
 function canTrainer(){ return currentUserRole === 'admin' || currentUserRole === 'formateur'; }
@@ -235,30 +214,25 @@ async function runSearch(){
 
 async function sendCertificate(){
   if (!canTrainer()) return;
-
   const payload = {
     name: document.getElementById('certName').value.trim(),
     date: document.getElementById('certDate').value.trim(),
     signature: document.getElementById('certSignature').value.trim(),
     comment: document.getElementById('certComment').value.trim()
   };
-
   const out = await api('/api?action=create_certificate', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify(payload)
   });
-
   if (!out || !out.data) return;
 
   if (out.data.ok) {
     setMsg('certMsg', 'ok', `Certificat créé : ${out.data.certificateNumber || ''} • Grade ${out.data.autoGrade || ''}`);
-
     const linkBox = document.getElementById('certLinks');
     const actions = document.getElementById('certActions');
     const pdf = document.getElementById('pdfDownload');
     const verify = document.getElementById('verifyLink');
-
     if (out.data.pdfUrl) {
       const base64 = out.data.pdfUrl.split(',')[1];
       const blob = b64toBlob(base64, 'application/pdf');
@@ -266,16 +240,13 @@ async function sendCertificate(){
       pdf.href = url;
       pdf.download = 'Certificat_SASP_' + (payload.name || 'Agent') + '.pdf';
     }
-
     if (out.data.verifyUrl) verify.href = out.data.verifyUrl;
-
     linkBox.style.display = 'block';
     linkBox.innerHTML = `<strong>Référence :</strong> ${out.data.certificateNumber || 'N/A'}<br><strong>Vérification :</strong><br>${out.data.verifyUrl || 'N/A'}`;
     actions.classList.remove('hidden');
   } else {
     setMsg('certMsg', 'err', out.data.error || 'Erreur.');
   }
-
   refreshAll();
 }
 
@@ -283,85 +254,97 @@ async function refreshAgents(){
   if (!canTrainer()) return;
   const out = await api('/api?action=agents');
   const box = document.getElementById('agents');
-
   if (!out || !out.data || !out.data.ok) {
     box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les agents.'}</div>`;
     return;
   }
-
   const items = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statAgents').textContent = items.length;
   document.getElementById('statCerts').textContent = items.reduce((a,b)=>a+(b.certCount||0),0);
+
+  const select = document.getElementById('agentDetailSelect');
+  select.innerHTML = '<option value="">Choisir un agent</option>' + items.map(a => `<option value="${a.id}">${a.name} • ${a.matricule || 'N/A'}</option>`).join('');
 
   if (!items.length){
     box.innerHTML = '<div class="item muted">Aucun agent.</div>';
     return;
   }
-
   box.innerHTML = items.map(agent => `
     <div class="item">
       <div><strong>${agent.name}</strong> <span class="pill">${agent.grade || 'Cadet'}</span></div>
       <div class="muted">Matricule : ${agent.matricule || 'N/A'}</div>
       <div class="muted">Division : ${agent.division || 'GAN'} • Statut : ${agent.status || 'Actif'}</div>
       <div class="muted">${agent.certCount || 0} certificat(s)</div>
-      ${canAdmin() ? `<div class="row"><button onclick='openAgentModal(${JSON.stringify(JSON.stringify(agent))})'>Modifier</button></div>` : ''}
     </div>
   `).join('');
 }
 
-function openAgentModal(agentJson){
-  const agent = JSON.parse(agentJson);
-  currentEditAgentId = agent.id;
-  document.getElementById('editName').value = agent.name || '';
-  document.getElementById('editMatricule').value = agent.matricule || '';
-  document.getElementById('editGrade').value = agent.grade || 'Cadet';
-  document.getElementById('editDivision').value = agent.division || 'GAN';
-  document.getElementById('editStatus').value = agent.status || 'Actif';
-  document.getElementById('editReason').value = '';
-  document.getElementById('editMsg').style.display = 'none';
-  document.getElementById('agentEditModal').style.display = 'flex';
-}
+async function loadAgentDetail(){
+  const id = document.getElementById('agentDetailSelect').value;
+  const box = document.getElementById('agentDetailBox');
+  const timeline = document.getElementById('agentTimeline');
+  if (!id) {
+    box.innerHTML = '<div class="detail-box muted">Sélectionne un agent pour afficher sa fiche.</div>';
+    timeline.innerHTML = '';
+    return;
+  }
 
-function closeAgentModal(){
-  document.getElementById('agentEditModal').style.display = 'none';
-  currentEditAgentId = null;
-}
+  const out = await api('/api?action=agent_details&id=' + encodeURIComponent(id));
+  if (!out || !out.data || !out.data.ok) {
+    box.innerHTML = '<div class="detail-box muted">Impossible de charger la fiche agent.</div>';
+    timeline.innerHTML = '';
+    return;
+  }
 
-async function saveAgent(){
-  if (!canAdmin() || !currentEditAgentId) return;
+  const agent = out.data.agent || {};
+  const certs = Array.isArray(out.data.certificates) ? out.data.certificates : [];
+  const promotions = Array.isArray(out.data.promotions) ? out.data.promotions : [];
 
-  const payload = {
-    id: currentEditAgentId,
-    name: document.getElementById('editName').value.trim(),
-    matricule: document.getElementById('editMatricule').value.trim(),
-    grade: document.getElementById('editGrade').value,
-    division: document.getElementById('editDivision').value,
-    status: document.getElementById('editStatus').value,
-    reason: document.getElementById('editReason').value.trim()
-  };
+  box.innerHTML = `
+    <div class="detail-box">
+      <strong>${agent.name || 'N/A'}</strong><br>
+      <span class="muted">Matricule : ${agent.matricule || 'N/A'}</span><br>
+      <span class="muted">Grade : ${agent.grade || 'Cadet'}</span><br>
+      <span class="muted">Division : ${agent.division || 'GAN'}</span><br>
+      <span class="muted">Statut : ${agent.status || 'Actif'}</span>
+    </div>
+    <div class="detail-box">
+      <strong>Données RP</strong><br>
+      <span class="muted">Certificats : ${agent.certCount || 0}</span><br>
+      <span class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</span><br>
+      <span class="muted">Promotions : ${promotions.length}</span>
+    </div>
+  `;
 
-  const out = await api('/api?action=update_agent_full', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
+  const certTimeline = certs.map(c => `
+    <div class="timeline-item">
+      <span class="pill pill-green">${c.mention || 'Certificat'}</span>
+      <div style="margin-top:8px"><strong>${c.certificateNumber || 'Sans numéro'}</strong></div>
+      <div class="muted">${c.date || 'N/A'} • ${c.signature || 'N/A'}</div>
+      ${c.comment ? `<div class="muted">${c.comment}</div>` : ''}
+    </div>
+  `).join('');
 
-  if (!out || !out.data) return;
-  setMsg('editMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Agent mis à jour.' : (out.data.error || 'Erreur.'));
-  if (out.data.ok) refreshAll();
+  const promoTimeline = promotions.map(p => `
+    <div class="timeline-item">
+      <span class="pill pill-blue">Promotion</span>
+      <div style="margin-top:8px"><strong>${p.fromGrade || 'N/A'} → ${p.toGrade || 'N/A'}</strong></div>
+      <div class="muted">${p.reason || 'N/A'}</div>
+      <div class="muted">${p.createdAt ? new Date(p.createdAt).toLocaleString('fr-FR') : 'N/A'}</div>
+    </div>
+  `).join('');
+
+  timeline.innerHTML = (certTimeline + promoTimeline) || '<div class="timeline-item muted">Aucun historique.</div>';
 }
 
 async function refreshApplications(){
   if (!canReception()) return;
-
   const out = await api('/api?action=applications');
   const box = document.getElementById('applications');
-
   if (!out || !out.data || !out.data.ok){
     box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les candidatures.'}</div>`;
     return;
   }
-
   const allItems = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statApps').textContent = allItems.length;
   document.getElementById('statPending').textContent = allItems.filter(x => (x.status || 'en_attente') === 'en_attente').length;
@@ -370,7 +353,6 @@ async function refreshApplications(){
   const txt = document.getElementById('applicationFilterText').value.trim().toLowerCase();
   const statusFilter = document.getElementById('applicationFilterStatus').value;
   const sort = document.getElementById('applicationSort').value;
-
   if (txt){
     items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt));
   }
@@ -402,10 +384,7 @@ async function refreshApplications(){
       </select>
 
       <textarea id="note_${item.id}" placeholder="Note interne staff">${item.staffNote || ''}</textarea>
-
-      <div class="row">
-        <button onclick="saveApplication(${item.id})">Enregistrer</button>
-      </div>
+      <div class="row"><button onclick="saveApplication(${item.id})">Enregistrer</button></div>
     </div>
   `).join('');
 }
@@ -464,18 +443,15 @@ async function refreshLogs(){
   if (!canAdmin()) return;
   const out = await api('/api?action=logs');
   const box = document.getElementById('logs');
-
   if (!out || !out.data || !out.data.ok){
     box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les logs.'}</div>`;
     return;
   }
-
   const items = Array.isArray(out.data.items) ? out.data.items : [];
   if (!items.length){
     box.innerHTML = '<div class="item muted">Aucun log.</div>';
     return;
   }
-
   box.innerHTML = items.slice(0,12).map(item => `
     <div class="item">
       <strong>${item.action}</strong>
@@ -488,16 +464,14 @@ async function refreshLogs(){
 async function refreshDashboard(){
   const out = await api('/api?action=dashboard');
   const box = document.getElementById('promotions');
-
   if (!out || !out.data || !out.data.ok){
     box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger le dashboard.'}</div>`;
     return;
   }
-
+  dashboardCache = out.data;
   document.getElementById('statToday').textContent = out.data.todayCertificates || 0;
   const promos = out.data.latestPromotions || [];
   document.getElementById('statPromos').textContent = promos.length;
-
   box.innerHTML = promos.length ? promos.map(item => `
     <div class="item">
       <strong>${item.toGrade || 'Grade'}</strong>
@@ -505,6 +479,17 @@ async function refreshDashboard(){
       <div class="muted">${item.reason || ''}</div>
     </div>
   `).join('') : '<div class="item muted">Aucune promotion récente.</div>';
+}
+
+function exportDashboard(){
+  if (!dashboardCache) return;
+  const blob = new Blob([JSON.stringify(dashboardCache, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sasp_dashboard_export.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function logout(){
@@ -526,10 +511,7 @@ async function refreshAll(){
   }
 }
 
-window.addEventListener('error', (e) => {
-  console.error('JS error:', e.error || e.message);
-});
-
+window.addEventListener('error', (e) => console.error('JS error:', e.error || e.message));
 refreshAll();
 </script>
 </body>
