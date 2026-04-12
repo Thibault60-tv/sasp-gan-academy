@@ -1,38 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>Login Staff</title>
-<style>
-body{background:#09090b;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh}
-.box{background:#111;padding:30px;border-radius:16px;border:1px solid #333}
-input,button{display:block;width:100%;margin-top:10px;padding:10px;border-radius:10px;border:none}
-button{background:#fbbf24;color:#111;font-weight:bold}
-</style>
-</head>
-<body>
-<div class="box">
-<h2>Connexion Staff</h2>
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Connexion</button>
-<div id="msg"></div>
+<body style="background:#111;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif">
+<div>
+<h2>Login</h2>
+<input id="u" placeholder="user"><br><br>
+<input id="p" type="password" placeholder="pass"><br><br>
+<button onclick="go()">Login</button>
+<p id="msg"></p>
 </div>
+
 <script>
-async function login(){
+async function go(){
   const res = await fetch('/api?action=login',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      username:document.getElementById('user').value,
-      password:document.getElementById('pass').value
-    })
+    body:JSON.stringify({username:u.value,password:p.value})
   });
-  const data = await res.json();
-  if(data.ok){
+  const d = await res.json();
+  if(d.ok){
     window.location.href='/admin.html';
   }else{
-    document.getElementById('msg').innerText="Erreur login";
+    msg.innerText="Erreur login";
   }
 }
 </script>
