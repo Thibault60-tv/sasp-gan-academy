@@ -283,6 +283,7 @@ async function loadAgentDetail(){
   const id = document.getElementById('agentDetailSelect').value;
   const box = document.getElementById('agentDetailBox');
   const timeline = document.getElementById('agentTimeline');
+
   if (!id) {
     box.innerHTML = '<div class="detail-box muted">Sélectionne un agent pour afficher sa fiche.</div>';
     timeline.innerHTML = '';
@@ -290,8 +291,9 @@ async function loadAgentDetail(){
   }
 
   const out = await api('/api?action=agent_details&id=' + encodeURIComponent(id));
+
   if (!out || !out.data || !out.data.ok) {
-    box.innerHTML = '<div class="detail-box muted">Impossible de charger la fiche agent.</div>';
+    box.innerHTML = '<div class="detail-box muted">Erreur chargement agent.</div>';
     timeline.innerHTML = '';
     return;
   }
@@ -310,9 +312,9 @@ async function loadAgentDetail(){
     </div>
     <div class="detail-box">
       <strong>Données RP</strong><br>
-      <span class="muted">Certificats : ${agent.certCount || 0}</span><br>
-      <span class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</span><br>
-      <span class="muted">Promotions : ${promotions.length}</span>
+      <span class="muted">Certificats : ${certs.length}</span><br>
+      <span class="muted">Promotions : ${promotions.length}</span><br>
+      <span class="muted">Créé le : ${agent.createdAt ? new Date(agent.createdAt).toLocaleString('fr-FR') : 'N/A'}</span>
     </div>
   `;
 

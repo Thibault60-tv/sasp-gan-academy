@@ -262,13 +262,22 @@ async function routeAgents(req, res) {
   }))});
 }
 async function routeAgentDetails(req, res) {
-  const payload = requireRole(req, res, ["admin", "formateur"]); if (!payload) return;
+  const payload = requireRole(req, res, ["admin", "formateur"]);
+  if (!payload) return;
   const id = new URL(req.url, "https://dummy").searchParams.get("id");
   if (!id) return json(res, 400, { ok: false, error: "ID manquant." });
+
   const agents = await fetchRows(`agents?select=id,name,grade,matricule,division,status,created_at&id=eq.${encodeURIComponent(id)}&limit=1`);
   if (!agents.length) return json(res, 404, { ok: false, error: "Agent introuvable." });
+
   const certs = await fetchRows(`certificates?select=id,name,date,signature,comment,mention,created_at,certificate_number,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
-  const promotions = await fetchRows(`grade_history?select=id,from_grade,to_grade,reason,created_at&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
+  let promotions = [];
+  try {
+    promotions = await fetchRows(`grade_history?select=id,from_grade,to_grade,reason,created_at,agent_id&agent_id=eq.${encodeURIComponent(id)}&order=created_at.desc`);
+  } catch (e) {
+    promotions = [];
+  }
+
   return json(res, 200, {
     ok: true,
     agent: {
@@ -281,10 +290,22 @@ async function routeAgentDetails(req, res) {
       createdAt: agents[0].created_at,
       certCount: certs.length
     },
-    promotions: promotions.map(p => ({ id: p.id, fromGrade: p.from_grade, toGrade: p.to_grade, reason: p.reason, createdAt: p.created_at })),
+    promotions: promotions.map(p => ({
+      id: p.id,
+      fromGrade: p.from_grade || "",
+      toGrade: p.to_grade || "",
+      reason: p.reason || "",
+      createdAt: p.created_at
+    })),
     certificates: certs.map(c => ({
-      id: c.id, name: c.name, date: c.date, signature: c.signature, comment: c.comment || "", comment: c.comment || "",
-      mention: c.mention || "", certificateNumber: c.certificate_number || "", createdAt: c.created_at
+      id: c.id,
+      name: c.name,
+      date: c.date,
+      signature: c.signature,
+      comment: c.comment || "",
+      mention: c.mention || "",
+      certificateNumber: c.certificate_number || "",
+      createdAt: c.created_at
     }))
   });
 }
