@@ -3,18 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SASP GAN Academy — Fix Agents & PDF</title>
+  <title>SASP GAN Academy — Admin Stable</title>
   <style>
-    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
-    .wrap{max-width:1540px;margin:0 auto;padding:24px} .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    :root{
+      --bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;
+      --gold:#fbbf24;--green:#86efac;--red:#fca5a5;--blue:#93c5fd;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:1500px;margin:0 auto;padding:24px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
     .badge{display:inline-flex;padding:8px 12px;border-radius:999px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.08);color:#fcd34d;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-    .role-admin{color:var(--red)} .role-formateur{color:var(--gold)} .role-accueil{color:var(--blue)}
-    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:22px} .stat{background:#0c0c0f;border:1px solid var(--line);border-radius:18px;padding:16px}
-    .label{font-size:13px;color:var(--muted)} .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;margin-top:24px}
+    .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
+    .stat{background:#0c0c0f;border:1px solid var(--line);border-radius:18px;padding:16px}
+    .label{font-size:13px;color:var(--muted)}
+    .value{margin-top:8px;font-size:28px;color:var(--gold);font-weight:800}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;margin-top:24px}
     .card{background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
-    .list{display:grid;gap:12px} .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
+    .list{display:grid;gap:12px}
+    .item{background:#09090b;border:1px solid var(--line);border-radius:16px;padding:14px}
     .muted{color:var(--muted)}
     .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.18);color:#fcd34d;font-size:11px;text-transform:uppercase;letter-spacing:.16em}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
@@ -22,20 +29,23 @@
     textarea{min-height:100px;resize:vertical}
     button,a.btn{padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:#16171b;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
     .primary{background:var(--gold);color:#111;border:none}
-    .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none} .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)} .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red)}
-    .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px} .hidden{display:none !important} .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
-    .modal{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
+    .msg{margin-top:12px;padding:12px 14px;border-radius:14px;display:none}
+    .ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green)}
+    .err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);color:var(--red)}
+    .toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-top:12px}
     .linkbox{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#09090b;word-break:break-all;display:none}
-    @media (max-width:1100px){.grid,.stats,.toolbar,.two-col{grid-template-columns:1fr}}
+    .hidden{display:none !important}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+    .modal{width:min(760px,96vw);max-height:90vh;overflow:auto;background:#111113;border:1px solid var(--line);border-radius:24px;padding:22px}
+    @media (max-width:1100px){.grid,.stats,.toolbar{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <div class="badge">FIX AGENTS + PDF</div>
-        <h1 style="margin:10px 0 6px">SASP GAN Academy — Staff Panel</h1>
+        <div class="badge">ADMIN STABLE</div>
+        <h1 style="margin:10px 0 6px">SASP GAN Academy — Panel Admin</h1>
         <div class="muted">Rôle connecté : <span id="currentRole">chargement...</span></div>
       </div>
       <div class="row">
@@ -56,16 +66,17 @@
     <div class="grid">
       <div class="card">
         <h2>Centre staff</h2>
-        <div class="two-col">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
           <div>
             <h3>Recherche</h3>
             <input id="globalSearch" placeholder="Agent, matricule, certificat..." oninput="runSearch()" autocomplete="off" />
             <div id="searchResults" class="list" style="margin-top:12px"></div>
           </div>
+
           <div id="certificateBox">
             <h3>Certificat rapide</h3>
             <input id="certName" placeholder="Nom RP" />
-            <input id="certDate" placeholder="Date" />
+            <input id="certDate" placeholder="Date" value="11/04/2026" />
             <input id="certSignature" placeholder="Signature commandement" value="SASP Command" />
             <textarea id="certComment" placeholder="Commentaire (optionnel)"></textarea>
             <div class="row"><button class="primary" onclick="sendCertificate()">Créer PDF + Discord</button></div>
@@ -78,7 +89,7 @@
           </div>
         </div>
 
-        <div id="agentListWrap" style="margin-top:20px">
+        <div style="margin-top:24px">
           <h3>Agents</h3>
           <div id="agents" class="list"><div class="item muted">Chargement...</div></div>
         </div>
@@ -120,13 +131,24 @@
       <input id="editName" placeholder="Nom RP" />
       <input id="editMatricule" placeholder="Matricule" />
       <select id="editGrade">
-        <option>Cadet</option><option>Officer</option><option>Senior Officer</option><option>Sergeant</option><option>Lieutenant</option><option>Captain</option>
+        <option>Cadet</option>
+        <option>Officer</option>
+        <option>Senior Officer</option>
+        <option>Sergeant</option>
+        <option>Lieutenant</option>
+        <option>Captain</option>
       </select>
       <select id="editDivision">
-        <option>GAN</option><option>Narcotics</option><option>Tactical</option><option>Command</option>
+        <option>GAN</option>
+        <option>Narcotics</option>
+        <option>Tactical</option>
+        <option>Command</option>
       </select>
       <select id="editStatus">
-        <option>Actif</option><option>En formation</option><option>Suspendu</option><option>Retiré</option>
+        <option>Actif</option>
+        <option>En formation</option>
+        <option>Suspendu</option>
+        <option>Retiré</option>
       </select>
       <textarea id="editReason" placeholder="Raison / note staff"></textarea>
       <div class="row">
@@ -146,17 +168,28 @@ function canTrainer(){ return currentUserRole === 'admin' || currentUserRole ===
 function canReception(){ return currentUserRole === 'admin' || currentUserRole === 'accueil'; }
 
 async function api(path, options = {}) {
-  const res = await fetch(path, options);
-  const data = await res.json().catch(() => ({}));
-  if (res.status === 401) { window.location.href = '/login.html'; return null; }
-  return { res, data };
+  try {
+    const res = await fetch(path, options);
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      window.location.href = '/login.html';
+      return null;
+    }
+    return { res, data };
+  } catch (err) {
+    console.error('API error:', err);
+    return { res: null, data: { ok: false, error: 'Erreur réseau.' } };
+  }
 }
+
 function setMsg(id, cls, text){
   const el = document.getElementById(id);
+  if (!el) return;
   el.className = 'msg ' + cls;
   el.textContent = text;
   el.style.display = 'block';
 }
+
 function b64toBlob(b64Data, contentType = 'application/pdf', sliceSize = 512) {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];
@@ -168,43 +201,59 @@ function b64toBlob(b64Data, contentType = 'application/pdf', sliceSize = 512) {
   }
   return new Blob(byteArrays, { type: contentType });
 }
+
 async function loadSessionRole(){
   const out = await api('/api?action=session');
-  if (!out || !out.data.ok) return;
+  if (!out || !out.data || !out.data.ok) {
+    document.getElementById('currentRole').textContent = 'session invalide';
+    return;
+  }
   currentUserRole = out.data.role || 'admin';
-  const roleEl = document.getElementById('currentRole');
-  roleEl.textContent = currentUserRole;
-  roleEl.className = currentUserRole === 'admin' ? 'role-admin' : currentUserRole === 'formateur' ? 'role-formateur' : 'role-accueil';
+  document.getElementById('currentRole').textContent = currentUserRole;
   document.getElementById('certificateBox').classList.toggle('hidden', !canTrainer());
 }
+
 async function runSearch(){
   const q = document.getElementById('globalSearch').value.trim();
   const box = document.getElementById('searchResults');
   if (q.length < 2){ box.innerHTML = ''; return; }
   const out = await api('/api?action=search&q=' + encodeURIComponent(q));
-  if (!out || !out.data.ok){ box.innerHTML = '<div class="item muted">Erreur recherche.</div>'; return; }
+  if (!out || !out.data || !out.data.ok){
+    box.innerHTML = '<div class="item muted">Erreur recherche.</div>';
+    return;
+  }
   const items = out.data.items || [];
-  if (!items.length){ box.innerHTML = '<div class="item muted">Aucun résultat.</div>'; return; }
+  if (!items.length){
+    box.innerHTML = '<div class="item muted">Aucun résultat.</div>';
+    return;
+  }
   box.innerHTML = items.map(item => item.type === 'agent'
     ? `<div class="item"><strong>${item.name}</strong><div class="muted">Agent • ${item.grade || 'Cadet'}</div></div>`
     : `<div class="item"><strong>${item.certificateNumber || 'Sans numéro'}</strong><div class="muted">${item.name || 'Sans nom'}</div></div>`
   ).join('');
 }
+
 async function sendCertificate(){
   if (!canTrainer()) return;
+
   const payload = {
     name: document.getElementById('certName').value.trim(),
     date: document.getElementById('certDate').value.trim(),
     signature: document.getElementById('certSignature').value.trim(),
     comment: document.getElementById('certComment').value.trim()
   };
+
   const out = await api('/api?action=create_certificate', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
   });
-  if (!out) return;
+
+  if (!out || !out.data) return;
 
   if (out.data.ok) {
     setMsg('certMsg', 'ok', `Certificat créé : ${out.data.certificateNumber || ''} • Grade ${out.data.autoGrade || ''}`);
+
     const linkBox = document.getElementById('certLinks');
     const actions = document.getElementById('certActions');
     const pdf = document.getElementById('pdfDownload');
@@ -215,8 +264,9 @@ async function sendCertificate(){
       const blob = b64toBlob(base64, 'application/pdf');
       const url = URL.createObjectURL(blob);
       pdf.href = url;
-      pdf.download = 'Certificat_SASP_' + payload.name + '.pdf';
+      pdf.download = 'Certificat_SASP_' + (payload.name || 'Agent') + '.pdf';
     }
+
     if (out.data.verifyUrl) verify.href = out.data.verifyUrl;
 
     linkBox.style.display = 'block';
@@ -225,17 +275,29 @@ async function sendCertificate(){
   } else {
     setMsg('certMsg', 'err', out.data.error || 'Erreur.');
   }
+
   refreshAll();
 }
+
 async function refreshAgents(){
   if (!canTrainer()) return;
   const out = await api('/api?action=agents');
-  if (!out) return;
   const box = document.getElementById('agents');
+
+  if (!out || !out.data || !out.data.ok) {
+    box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les agents.'}</div>`;
+    return;
+  }
+
   const items = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statAgents').textContent = items.length;
   document.getElementById('statCerts').textContent = items.reduce((a,b)=>a+(b.certCount||0),0);
-  if (!out.data.ok || !items.length){ box.innerHTML = '<div class="item muted">Aucun agent.</div>'; return; }
+
+  if (!items.length){
+    box.innerHTML = '<div class="item muted">Aucun agent.</div>';
+    return;
+  }
+
   box.innerHTML = items.map(agent => `
     <div class="item">
       <div><strong>${agent.name}</strong> <span class="pill">${agent.grade || 'Cadet'}</span></div>
@@ -246,6 +308,7 @@ async function refreshAgents(){
     </div>
   `).join('');
 }
+
 function openAgentModal(agentJson){
   const agent = JSON.parse(agentJson);
   currentEditAgentId = agent.id;
@@ -258,12 +321,15 @@ function openAgentModal(agentJson){
   document.getElementById('editMsg').style.display = 'none';
   document.getElementById('agentEditModal').style.display = 'flex';
 }
+
 function closeAgentModal(){
   document.getElementById('agentEditModal').style.display = 'none';
   currentEditAgentId = null;
 }
+
 async function saveAgent(){
   if (!canAdmin() || !currentEditAgentId) return;
+
   const payload = {
     id: currentEditAgentId,
     name: document.getElementById('editName').value.trim(),
@@ -273,17 +339,29 @@ async function saveAgent(){
     status: document.getElementById('editStatus').value,
     reason: document.getElementById('editReason').value.trim()
   };
+
   const out = await api('/api?action=update_agent_full', {
-    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
   });
-  if (!out) return;
+
+  if (!out || !out.data) return;
   setMsg('editMsg', out.data.ok ? 'ok' : 'err', out.data.ok ? 'Agent mis à jour.' : (out.data.error || 'Erreur.'));
-  if (out.data.ok) { refreshAll(); }
+  if (out.data.ok) refreshAll();
 }
+
 async function refreshApplications(){
   if (!canReception()) return;
+
   const out = await api('/api?action=applications');
-  if (!out) return;
+  const box = document.getElementById('applications');
+
+  if (!out || !out.data || !out.data.ok){
+    box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les candidatures.'}</div>`;
+    return;
+  }
+
   const allItems = Array.isArray(out.data.items) ? out.data.items : [];
   document.getElementById('statApps').textContent = allItems.length;
   document.getElementById('statPending').textContent = allItems.filter(x => (x.status || 'en_attente') === 'en_attente').length;
@@ -292,6 +370,7 @@ async function refreshApplications(){
   const txt = document.getElementById('applicationFilterText').value.trim().toLowerCase();
   const statusFilter = document.getElementById('applicationFilterStatus').value;
   const sort = document.getElementById('applicationSort').value;
+
   if (txt){
     items = items.filter(x => (x.candidateName || '').toLowerCase().includes(txt) || (x.candidateDiscord || '').toLowerCase().includes(txt));
   }
@@ -300,8 +379,10 @@ async function refreshApplications(){
   }
   items.sort((a,b) => sort === 'oldest' ? new Date(a.createdAt) - new Date(b.createdAt) : new Date(b.createdAt) - new Date(a.createdAt));
 
-  const box = document.getElementById('applications');
-  if (!items.length){ box.innerHTML = '<div class="item muted">Aucune candidature.</div>'; return; }
+  if (!items.length){
+    box.innerHTML = '<div class="item muted">Aucune candidature.</div>';
+    return;
+  }
 
   box.innerHTML = items.map(item => `
     <div class="item">
@@ -330,7 +411,6 @@ async function refreshApplications(){
 }
 
 async function saveApplication(id){
-  if (!canReception()) return;
   const status = document.getElementById('status_' + id).value;
   const staffNote = document.getElementById('note_' + id).value;
   const out = await api('/api?action=update_application', {
@@ -338,7 +418,7 @@ async function saveApplication(id){
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ id, status, staffNote })
   });
-  if (!out) return;
+  if (!out || !out.data) return;
   if (out.data.ok) {
     refreshApplications();
     refreshLogs();
@@ -355,12 +435,9 @@ async function quickAccept(id){
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ id, staffNote: note || '' })
   });
-  if (!out) return;
+  if (!out || !out.data) return;
   if (out.data.ok) {
-    alert('Candidature acceptée
-Agent créé automatiquement
-Certificat recrutement créé
-Discord notifié');
+    alert('Candidature acceptée\nAgent créé automatiquement\nCertificat recrutement créé\nDiscord notifié');
     refreshAll();
   } else {
     alert(out.data.error || 'Erreur acceptation');
@@ -374,7 +451,7 @@ async function quickReject(id){
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ id, staffNote: note || '' })
   });
-  if (!out) return;
+  if (!out || !out.data) return;
   if (out.data.ok) {
     alert('Candidature refusée');
     refreshAll();
@@ -386,10 +463,19 @@ async function quickReject(id){
 async function refreshLogs(){
   if (!canAdmin()) return;
   const out = await api('/api?action=logs');
-  if (!out) return;
   const box = document.getElementById('logs');
+
+  if (!out || !out.data || !out.data.ok){
+    box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger les logs.'}</div>`;
+    return;
+  }
+
   const items = Array.isArray(out.data.items) ? out.data.items : [];
-  if (!items.length){ box.innerHTML = '<div class="item muted">Aucun log.</div>'; return; }
+  if (!items.length){
+    box.innerHTML = '<div class="item muted">Aucun log.</div>';
+    return;
+  }
+
   box.innerHTML = items.slice(0,12).map(item => `
     <div class="item">
       <strong>${item.action}</strong>
@@ -398,13 +484,20 @@ async function refreshLogs(){
     </div>
   `).join('');
 }
+
 async function refreshDashboard(){
   const out = await api('/api?action=dashboard');
-  if (!out || !out.data.ok) return;
+  const box = document.getElementById('promotions');
+
+  if (!out || !out.data || !out.data.ok){
+    box.innerHTML = `<div class="item muted">${(out && out.data && out.data.error) || 'Impossible de charger le dashboard.'}</div>`;
+    return;
+  }
+
   document.getElementById('statToday').textContent = out.data.todayCertificates || 0;
   const promos = out.data.latestPromotions || [];
   document.getElementById('statPromos').textContent = promos.length;
-  const box = document.getElementById('promotions');
+
   box.innerHTML = promos.length ? promos.map(item => `
     <div class="item">
       <strong>${item.toGrade || 'Grade'}</strong>
@@ -413,8 +506,30 @@ async function refreshDashboard(){
     </div>
   `).join('') : '<div class="item muted">Aucune promotion récente.</div>';
 }
-async function logout(){ await fetch('/api?action=logout', { method:'POST' }); window.location.href = '/login.html'; }
-async function refreshAll(){ await loadSessionRole(); refreshAgents(); refreshApplications(); refreshLogs(); refreshDashboard(); }
+
+async function logout(){
+  await fetch('/api?action=logout', { method:'POST' });
+  window.location.href = '/login.html';
+}
+
+async function refreshAll(){
+  try {
+    await loadSessionRole();
+    await Promise.allSettled([
+      refreshAgents(),
+      refreshApplications(),
+      refreshLogs(),
+      refreshDashboard()
+    ]);
+  } catch (err) {
+    console.error('refreshAll error:', err);
+  }
+}
+
+window.addEventListener('error', (e) => {
+  console.error('JS error:', e.error || e.message);
+});
+
 refreshAll();
 </script>
 </body>
