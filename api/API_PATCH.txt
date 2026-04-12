@@ -1,0 +1,27 @@
+// ADD THIS TO YOUR API (index.js)
+
+// Simple in-memory roles (replace with DB later)
+const staffUsers = [
+  { username: "admin", password: "admin123", role: "admin" },
+  { username: "formateur", password: "form123", role: "formateur" },
+  { username: "accueil", password: "acc123", role: "accueil" }
+];
+
+async function routeLogin(req, res){
+  const { username, password } = await readBody(req);
+  const user = staffUsers.find(u => u.username === username && u.password === password);
+  if(!user) return json(res, 401, { ok:false, error:"Invalid credentials" });
+
+  setSession(res, { role:user.role, username:user.username });
+  return json(res, 200, { ok:true, role:user.role });
+}
+
+async function routeSession(req,res){
+  const s = getSession(req);
+  if(!s) return json(res, 200, { ok:false });
+  return json(res, 200, { ok:true, role:s.role, username:s.username });
+}
+
+// Add in router:
+// case "login": return routeLogin(req,res);
+// case "session": return routeSession(req,res);
