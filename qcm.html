@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QCM SWAT - SASP GAN Academy</title>
+  <style>
+    :root{--bg:#09090b;--panel:#111113;--line:#25262b;--text:#f5f5f5;--muted:#a1a1aa;--gold:#fbbf24;--green:#22c55e;--red:#ef4444}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top,rgba(251,191,36,.08),transparent 25%),linear-gradient(180deg,#111214,#09090b);color:var(--text)}
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    .card{background:rgba(17,17,19,.96);border:1px solid var(--line);border-radius:26px;padding:24px;margin-top:20px}
+    h1{font-size:42px;margin:0 0 10px}
+    .muted{color:var(--muted)}
+    .question{padding:18px;border:1px solid var(--line);border-radius:18px;background:#0d0d10;margin-top:16px}
+    .option{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:14px;margin-top:10px;cursor:pointer}
+    .option input{margin-right:10px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 18px;border-radius:16px;border:1px solid var(--line);background:#15161a;color:#fff;text-decoration:none;font-weight:700;cursor:pointer}
+    .primary{background:var(--gold);color:#111;border:none}
+    .result{margin-top:22px;padding:18px;border-radius:18px;display:none}
+    .success{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25)}
+    .warn{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.25)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>QCM Recrutement SWAT</h1>
+      <p class="muted">Répondez aux 7 questions. Le score s'affiche automatiquement à la fin.</p>
+
+      <form id="quizForm">
+        <div class="question">
+          <strong>1. Quelle est la priorité du SWAT ?</strong>
+          <label class="option"><input type="radio" name="q1" value="A">A. Faire des kills</label>
+          <label class="option"><input type="radio" name="q1" value="B">B. Protéger civils et équipe</label>
+          <label class="option"><input type="radio" name="q1" value="C">C. Aller vite</label>
+          <label class="option"><input type="radio" name="q1" value="D">D. S'amuser</label>
+        </div>
+
+        <div class="question">
+          <strong>2. Une mauvaise communication radio provoque :</strong>
+          <label class="option"><input type="radio" name="q2" value="A">A. Rien</label>
+          <label class="option"><input type="radio" name="q2" value="B">B. Un danger pour l’équipe</label>
+          <label class="option"><input type="radio" name="q2" value="C">C. Plus de fun</label>
+          <label class="option"><input type="radio" name="q2" value="D">D. Moins de travail</label>
+        </div>
+
+        <div class="question">
+          <strong>3. Comment entrer dans un bâtiment ?</strong>
+          <label class="option"><input type="radio" name="q3" value="A">A. Seul</label>
+          <label class="option"><input type="radio" name="q3" value="B">B. En tirant</label>
+          <label class="option"><input type="radio" name="q3" value="C">C. Coordonné en équipe</label>
+          <label class="option"><input type="radio" name="q3" value="D">D. Sans plan</label>
+        </div>
+
+        <div class="question">
+          <strong>4. Un suspect lève les mains :</strong>
+          <label class="option"><input type="radio" name="q4" value="A">A. Tu tires</label>
+          <label class="option"><input type="radio" name="q4" value="B">B. Tu ignores</label>
+          <label class="option"><input type="radio" name="q4" value="C">C. Tu contrôles et menottes</label>
+          <label class="option"><input type="radio" name="q4" value="D">D. Tu pars</label>
+        </div>
+
+        <div class="question">
+          <strong>5. En CQB, rester dans une porte :</strong>
+          <label class="option"><input type="radio" name="q5" value="A">A. Bonne idée</label>
+          <label class="option"><input type="radio" name="q5" value="B">B. Mauvaise idée</label>
+          <label class="option"><input type="radio" name="q5" value="C">C. Obligatoire</label>
+          <label class="option"><input type="radio" name="q5" value="D">D. Sans importance</label>
+        </div>
+
+        <div class="question">
+          <strong>6. En SWAT, jouer solo :</strong>
+          <label class="option"><input type="radio" name="q6" value="A">A. Autorisé</label>
+          <label class="option"><input type="radio" name="q6" value="B">B. Recommandé</label>
+          <label class="option"><input type="radio" name="q6" value="C">C. Interdit</label>
+          <label class="option"><input type="radio" name="q6" value="D">D. Normal</label>
+        </div>
+
+        <div class="question">
+          <strong>7. Priorité en prise d’otage :</strong>
+          <label class="option"><input type="radio" name="q7" value="A">A. Tirer</label>
+          <label class="option"><input type="radio" name="q7" value="B">B. Fuir</label>
+          <label class="option"><input type="radio" name="q7" value="C">C. Sauver les civils</label>
+          <label class="option"><input type="radio" name="q7" value="D">D. Attendre</label>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" type="button" onclick="calculateScore()">Corriger le QCM</button>
+          <a class="btn" href="swat.html">Voir la formation</a>
+          <a class="btn" href="index.html">Retour accueil</a>
+        </div>
+      </form>
+
+      <div id="resultBox" class="result"></div>
+    </div>
+  </div>
+
+  <script>
+    function calculateScore() {
+      const answers = {q1:'B', q2:'B', q3:'C', q4:'C', q5:'B', q6:'C', q7:'C'};
+      let score = 0;
+      let answered = 0;
+
+      Object.keys(answers).forEach(key => {
+        const checked = document.querySelector(`input[name="${key}"]:checked`);
+        if (checked) {
+          answered++;
+          if (checked.value === answers[key]) score++;
+        }
+      });
+
+      const box = document.getElementById('resultBox');
+      box.style.display = 'block';
+
+      if (answered < 7) {
+        box.className = 'result warn';
+        box.innerHTML = `<strong>QCM incomplet.</strong><br>Vous avez répondu à ${answered}/7 questions.`;
+        return;
+      }
+
+      let verdict = '';
+      if (score >= 6) verdict = '✅ Accepté';
+      else if (score >= 4) verdict = '⚠️ Test terrain complémentaire';
+      else verdict = '❌ Refus';
+
+      box.className = score >= 6 ? 'result success' : 'result warn';
+      box.innerHTML = `<strong>Résultat :</strong> ${score}/7<br><strong>Verdict :</strong> ${verdict}`;
+    }
+  </script>
+</body>
+</html>
